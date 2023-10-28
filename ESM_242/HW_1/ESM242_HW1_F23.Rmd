@@ -1,0 +1,212 @@
+---
+title: "HW 1"
+author: "ESM242"
+output: 
+  html_document:
+    code_folding: hide
+date: '2023-10-10'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(nloptr)
+library(knitr)
+```
+
+
+## Question 1: Mining Reserve {.tabset}
+
+
+Suppose you own a mine with initial reserves $R_0$=1. You wish to determine the extraction rates, qt, that will maximize the sum of the present value of net benefits (PVNB) over a 10-year horizon t=0,1,…,9.  The net benefits from extraction are given by $\pi_t=c_0q_t+c_1q_t^2$ where $c_0$=0.8 and $c_1$=-0.1.  The discount rate is 0.05 and we’ll assume (at first) that any reserves left over in period 10 have a value of zero (i.e., $\lambda_0=0$). Find the extraction rates that maximize PVNB.  You will want to constrain extraction $q_t$ to be less than $R_t$ and for remaining reserves $R_{10}$ to be nonnegative.  
+
+### A. 
+
+What is the maximum PVNB with the initial set of parameters?
+
+<span style="color: blue;">**The max PVNB is 0.737 with the initial set of parameters.**</span>
+
+
+```{r}
+#objective function
+pvnb_mine_func <- function(choice, c0, c1, discount, int_state, lambda) {
+  
+  #storage vectors
+  state<-vector(mode="numeric",length=0)
+  
+  benefits<-vector(mode="numeric",length=0)
+  
+  #initial
+  state[1] = int_state
+  
+  benefits[1] = c0*choice[1]+c1*choice[1]^2
+ 
+  #for loop
+   for(i in 2:period) {
+    
+    state[i] = state[i-1]-choice[i-1]
+    
+    benefits[i] = c0*choice[i]+c1*choice[i]^2
+  
+   }
+  
+  state[period+1] = state[period]-choice[period]
+  
+  benefits[period+1] = state[period+1]*lambda 
+  
+  t=seq(from=0, period) #sequence from from 0 to period (0-9)
+  
+  pv=discount^t*benefits #discount benefits to get the present value of benefits 
+    
+  npv=sum(pv) #sum all the present value of benefits
+  
+  return(-npv)
+  
+}
+
+
+#constraint function
+constraint_func <- function(choice, c0, c1, discount, int_state, lambda) {
+  
+  #vectors
+  state<-vector(mode="numeric",length=0)
+  
+  const<-vector(mode="numeric",length=0)
+  
+  #initial
+  state[1] = int_state
+  
+  const[1] = choice[1]-state[1]
+  
+  #for loop
+  for(i in 2:period) {
+    
+    state[i] = state[i-1]-choice[i-1]
+    
+    const[i] = choice[i]-state[i]
+  }
+
+  return(const)
+}
+  
+```
+
+
+```{r}
+#Optimization 
+
+#Use these options with nloptr
+options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15,maxeval=16000)
+period=10
+
+out_mine_a <- nloptr(
+  x0=rep(0.1, period), 
+  int_state=1, 
+  eval_f = pvnb_mine_func, 
+  eval_g_ineq = constraint_func,
+  lb=rep(0, period),
+  opts=options, 
+  discount = 1/1.05, 
+  c0=0.8,
+  c1=-0.1,
+  lambda=0
+)
+
+
+print(out_mine_a$solution)
+
+round(-out_mine_a$objective, 3)
+```
+
+### B.
+
+How does the PVNB change when you assume that reserves left over in period 10 have a per unit value of $\lambda_{10}$=1.2? How do the optimal values of $q_t$ compare to those in part a? Explain.
+
+<span style="color: blue;">**When you assume that reserves left over in period 10 have a per unit value of $\lambda_{10}$=1.2, the PVNB is 0.748. This is an increase from the initial PVNB of 0.737, which indicates that harvesting at a later time is more beneficial. The optimal values when $\lambda_{10}$=1.2 are lower than the initial. The lower the optimal values are, the more beneficial it is to leave reserves for future periods because then the reserves will have a higher value.**
+</span>
+
+```{r}
+out_mine_b<- nloptr(
+  x0=rep(0.1, period), 
+  int_state=1, 
+  eval_f = pvnb_mine_func, 
+  eval_g_ineq = constraint_func,
+  lb=rep(0, period),
+  opts=options, 
+  discount = 1/1.05, 
+  c0=0.8,
+  c1=-0.1,
+  lambda=1.2
+)
+
+print(out_mine_b$solution)
+
+round(-out_mine_b$objective, 3)
+```
+
+
+### C.
+
+What is the PVNB when $\lambda_{10}=1.4$ How do the optimal values of $q_t$ compare to those in part a? Explain.
+
+<span style="color: blue;">**The PVNB has grown to 0.859, indicating an even greater value from harvesting at a later time. Again, the optimal values are even smaller than what it was in part a, meaning that it is still more beneficial to leave reserves for later periods, when the value of the reserves is higher.**
+</span>
+```{r}
+out_mine_c<- nloptr(
+  x0=rep(0.1, period), 
+  int_state=1, 
+  eval_f = pvnb_mine_func, 
+  eval_g_ineq = constraint_func,
+  lb=rep(0, period),
+  opts=options, 
+  discount = 1/1.05, 
+  c0=0.8,
+  c1=-0.1,
+  lambda=1.4
+)
+
+
+print(out_mine_c$solution)
+
+round(-out_mine_c$objective, 3)
+```
+
+
+
+### D.
+
+Even without using R, you could reason that the PVNB must be at least as large in parts b and c compared to part a. Explain.
+
+<span style="color: blue;">**The PVNB in parts B and C are larger than part A because the value of $\lambda$ has increased. If the value of the reserves is greater than 0, then the PVNB must increase. The greater that $\lambda$ is, the greater the benefit, leading to a greater value of return after discounting.**
+</span>
+
+
+
+### E.
+
+Now set $\lambda_{10}$ back to 0 and set $c_1$=0. Resolve and explain what happens to the optimal values of $q_t$ compare to those in part a. 
+
+<span style="color: blue;">**If $\lambda_{10}$ is 0, the value of the reserves in the last year is 0. Setting $c_1$=0 means that the cost to extract resources in time 1 is nothing. This means that it is most beneficial to extract all the resources early on since mining costs very little and then adopting a very conservative approach to extraction in later times to ensure the the value of the reserves. In A, the optimal values still emphasize early extraction, but allow for some extraction in later times before moving to a conservative extraction strategy.**
+</span>
+
+```{r}
+out_mine_e <- nloptr(
+  x0=rep(0.1, times=10), 
+  int_state=1, 
+  eval_f = pvnb_mine_func, 
+  eval_g_ineq = constraint_func,
+  lb=rep(0, times=10),
+  opts=options, 
+  discount = 1/1.05, 
+  c0=0.8,
+  c1=0,
+  lambda=0
+)
+
+print(out_mine_e$solution)
+
+round(-out_mine_e$objective, 3)
+```

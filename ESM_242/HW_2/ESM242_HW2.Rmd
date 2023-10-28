@@ -1,0 +1,316 @@
+---
+title: "ESM 242 HW 2"
+author: "Andrew Plantinga"
+date: '2022-07-01'
+output: 
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(nloptr)
+library(knitr)
+
+```
+
+
+
+## Question 1: Optimal fishery{.tabset}
+
+This question examines the optimal management of a fishery. The stock dynamics are given by:
+
+\begin{equation}
+X_{t+1} = X_{t} + F(X_{t}) - Y_{t}
+\end{equation}
+
+where $F(X_{t})=rX_{t}(1-X_{t}/K)$ and $Y_t=qX_t E_t$.  Profits in each year are given by $\pi_t=pY_t-cE_t^2$.  Parameters values are given by:
+
+\begin{equation}
+\begin{aligned}
+r& & 0.1\\
+K& & 1 \\
+q& & 0.01 \\
+p& & 500 \\
+c& & .01 \\
+\delta& &0.05
+\end{aligned}
+\end{equation}
+
+Assume the fishery manager chooses effort to maximize the present discounted value of profits over 50 periods, t=0,1,…,49.  Make sure to constrain the solution so that the amount of harvest $Y_{t}$ does not exceed the stock $X_{t}$ in any period.
+
+### A.
+
+What is the solution when the initial stock is 0.5?  Create a table that shows effort and stock in each period.  See fishery model in R_examples_1.Rmd for how to create a basic table from the nloptr output.
+
+<span style="color: blue;">**Solution**</span>
+
+```{r}
+#objective function 
+
+#choice is E
+
+#state is x 
+
+fish_obj <- function(choice, int_state, discount, r, K, q, p, c) {
+  
+  #vectors 
+  state <- vector(mode="numeric", length=0)
+  benefits <- vector(mode="numeric", length=0)
+  
+  #initial state 
+  state[1]=int_state
+  benefits[1]=p*(q*state[1]*choice[1])-c*choice[1]^2
+  
+  #for loop 
+  for(i in 2:(period)) {
+    Func=r*state[i-1]*(1-state[i-1]/K)
+    state[i]=state[i-1]+Func-(q*state[i-1]*choice[i-1])
+    benefits[i]=p*(q*state[i]*choice[i])-c*choice[i]^2
+  }
+
+  t=seq(from=0, period-1)
+  pv=discount^t*benefits
+  npv=sum(pv)
+  
+  return(-npv)
+}
+
+#constrain yield < stock 
+fish_const <- function(choice, int_state, discount, r, K, q, p, c) {
+  
+  #vectors 
+  state <- vector(mode="numeric", length=0)
+  const <- vector(mode="numeric", length=0)
+  
+  
+  #initial state 
+  state[1]=int_state
+  const[1]=q*state[1]*choice[1]-state[1]
+  
+  #for loop 
+  for(i in 2:(period)) {
+    Func=r*state[i-1]*(1-state[i-1]/K)
+    state[i]=state[i-1]+Func-(q*state[i-1]*choice[i-1])
+    const[i]=q*state[i]*choice[i]-state[i]
+  }
+  
+  return(const)
+}
+```
+
+
+```{r}
+
+## Use this options list for nloptr
+
+local_opts<-list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-5)
+options=list("algorithm"="NLOPT_LN_AUGLAG",xtol_rel=1e-15,maxeval=16000,"local_opts"=local_opts)
+
+
+period=50
+
+out_fish_a <- nloptr(
+  x0 = rep(1, period),
+  opts = options,
+  int_state = 0.5, 
+  eval_f = fish_obj, 
+  eval_g_ineq = fish_const, 
+  lb = rep(0, period),
+  discount = 1/1.05, 
+  r = 0.1, 
+  K = 1, 
+  q = 0.01, 
+  p = 500, 
+  c = .01
+)
+
+print(out_fish_a$solution)
+
+round(-out_fish_a$objective, 3)
+```
+
+
+```{r}
+#table a
+stock_a<-function(choice, int_state=0.5, discount=1/1.05, period=50, r = 0.1, K = 1, q = 0.01, p = 500, c = .01){
+  
+  #storage vectors
+  state<-vector(mode="numeric",length=length(choice))
+  benefits<-vector(mode="numeric",length=length(choice))
+
+  #initial state and benefits
+  state[1]=int_state
+  benefits[1]=p*(q*state[1]*choice[1])-c*choice[1]^2
+  
+  for(i in 2:(period)){
+  Func=r*state[i-1]*(1-state[i-1]/K)  
+  state[i]=state[i-1]+Func-(q*state[i-1]-q*state[i-1]*choice[i-1])
+  benefits[i]=p*(q*state[i]*choice[i])-c*choice[i]^2
+             
+  }
+  
+  t=seq(from=0,period)
+  
+  pv=discount^t*benefits
+  
+  npv=sum(pv)
+  
+  return(data.frame("period"=t, "pv"=pv, "stock"=state, "effort"=choice))
+
+}
+
+out_fish_a$solution[51]=NA
+
+tbl_fish_a=round(stock_a(out_fish_a$solution), 3)
+
+kable(tbl_fish_a)
+```
+
+
+
+### B.
+
+What is the solution when the initial stock is 0.1?  Create a table that shows effort and stock in each period.
+
+<span style="color: blue;">**Solution**</span>
+
+```{r}
+
+out_fish_b <- nloptr(
+  x0 = rep(1, period),
+  opts = options,
+  int_state = 0.1, 
+  eval_f = fish_obj, 
+  eval_g_ineq = fish_const, 
+  lb = rep(0, period),
+  discount = 1/1.05, 
+  r = 0.1, 
+  K = 1, 
+  q = 0.01, 
+  p = 500, 
+  c = .01
+)
+
+print(out_fish_b$solution)
+
+round(-out_fish_b$objective, 3)
+```
+
+```{r}
+#table_b
+stock_b<-function(choice, int_state=0.1, discount=1/1.05, period=50, r = 0.1, K = 1, q = 0.01, p = 500, c = .01){
+  
+  #storage vectors
+  state<-vector(mode="numeric",length=length(choice))
+  benefits<-vector(mode="numeric",length=length(choice))
+
+  #initial state and benefits
+  state[1]=int_state
+  benefits[1]=p*(q*state[1]*choice[1])-c*choice[1]^2
+  
+  for(i in 2:(period)){
+  Func=r*state[i-1]*(1-state[i-1]/K)  
+  state[i]=state[i-1]+Func-(q*state[i-1]-q*state[i-1]*choice[i-1])
+  benefits[i]=p*(q*state[i]*choice[i])-c*choice[i]^2
+             
+  }
+
+  t=seq(from=0,period)
+  
+  pv=discount^t*benefits
+  
+  npv=sum(pv)
+  
+  return(data.frame("period"=t, "pv"=pv, "stock"=state, "effort"=choice))
+
+}
+
+out_fish_b$solution[51]=NA
+
+tbl_fish_b=round(stock_b(out_fish_b$solution), 3)
+
+kable(tbl_fish_b)
+```
+
+
+
+### C.
+
+What is the solution when the initial stock is 0.9?  Create a table that shows effort and stock in each period
+
+<span style="color: blue;">**Solution**</span>
+
+```{r}
+
+out_fish_c <- nloptr(
+  x0 = rep(1, period),
+  opts = options,
+  int_state = 0.9, 
+  eval_f = fish_obj, 
+  eval_g_ineq = fish_const, 
+  lb = rep(0, period),
+  discount = 1/1.05, 
+  r = 0.1, 
+  K = 1, 
+  q = 0.01, 
+  p = 500, 
+  c = .01
+)
+
+print(out_fish_c$solution)
+
+round(-out_fish_c$objective, 3)
+```
+
+```{r}
+#table c
+stock_c<-function(choice, int_state=0.9, discount=1/1.05, period=50, r = 0.1, K = 1, q = 0.01, p = 500, c = .01){
+  
+  #storage vectors
+  state<-vector(mode="numeric",length=length(choice))
+  benefits<-vector(mode="numeric",length=length(choice))
+
+  #initial state and benefits
+  state[1]=int_state
+  benefits[1]=p*(q*state[1]*choice[1])-c*choice[1]^2
+  
+  for(i in 2:(period)){
+  Func=r*state[i-1]*(1-state[i-1]/K)  
+  state[i]=state[i-1]+Func-(q*state[i-1]-q*state[i-1]*choice[i-1])
+  benefits[i]=p*(q*state[i]*choice[i])-c*choice[i]^2
+             
+  }
+  
+  t=seq(from=0,period)
+  
+  pv=discount^t*benefits
+  
+  npv=sum(pv)
+  
+  return(data.frame("period"=t, "pv"=pv, "stock"=state, "effort"=choice))
+
+}
+
+out_fish_c$solution[51]=NA
+
+tbl_fish_c=round(stock_c(out_fish_c$solution), 3)
+
+kable(tbl_fish_c)
+```
+
+
+### D.
+
+Compare the stock in the last period across the three solutions.  What do you notice?  Can you explain the pattern in terms of the fundamental equation of renewable resources?
+
+<span style="color: blue;">**When the initial stock in 0.5, the stock in the last time period is 1.094. When the initial stock is 0.1, the stock in the last time period is 1.157 Finally, when the initial stock is 0.9, the stock in the last time period is 1.096. When the initial stock is smallest, the stock at the last time period is larger than when there were larger initial stocks. This is because of the influence of carrying capacity and the natural growth rate of the fish stocks. If the initial stock is much smaller than carrying capacity, which in this scenario is 1, there is ample opportunity for the stock to grow larger. However, if the initial stock is closer to carrying capacity, like in A and C, there is less of an opportunity for the fish stock to grow. With considerations to fishing effort, if the stock is smaller, fishers will contribute less effort. Similarly, when the stock is larger, fishers will contribute more effort. All of this combined indicates that carrying capacity and effort play a large role in determining the size of a stock. When initial stock is 0.1, there is less fishing effort because of the small population size, allowing the population to grow throughout time periods - thus this is the scenario with the largest final population size. The reverse is true for when initial stock is 0.5 or 0.9 - large initial stock sizes will result in more intensive fishing efforts that create added pressures to the natural carrying capacity, leading to smaller final stock sizes.**</span>
+
+
+### E.
+
+Compare the value of the objective function (i.e., the present value of profits) across the three solutions.  Explain the differences.  
+
+<span style="color: blue;">**When initial stock is 0.5, the present value of profits is 177.356. When the initial stock is 0.1, the present value of profits is 69.307. Finally, when the initial stock is 0.9, the present value of profits is 253.6. The present value of profits when the initial stock is larger is higher than the present value of profits when the initial stock is lower, because of the immediate profits and benefits. If there is more stock to be readily fished at the initial time, there is a greater value to the profits than if there is less stock to be readily fished. As a result of those large initial stocks, the present values in early time periods for A and C are much larger than in those in B. In scenario B, the present value for each time period does not change as drastically as in A and C. In scenario A, the present value essentially steadily declines throughout the time period. In scenario C, there is a small growth in present values until time 5, and then it begins to steadily decline.**</span>
