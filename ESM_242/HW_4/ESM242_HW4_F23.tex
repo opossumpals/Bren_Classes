@@ -1,0 +1,561 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={HW 4},
+  pdfauthor={Andrew Plantinga},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{HW 4}
+\author{Andrew Plantinga}
+\date{2023-10-31}
+
+\begin{document}
+\maketitle
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(tidyverse)}
+\FunctionTok{library}\NormalTok{(nloptr)}
+\FunctionTok{library}\NormalTok{(knitr)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{exhaustible-resource-extraction}{%
+\subsection{Exhaustible Resource
+Extraction}\label{exhaustible-resource-extraction}}
+
+Suppose there is an exhaustible resource that is costlessly extracted.
+The inverse demand curve for the resource is \(p_t=a-bq_t\) where
+\(q_t\) is the quantity extracted in time t and a=40, b=1. The discount
+rate is \(\delta=0.05\) and the initial stock of reserves is \(R_0\) =
+778.1259 units. Set up a program to find the competitive market
+equilibrium and show the equilibrium values of \(p_t\), \(q_t\),
+\(R_t\), and \(\pi_t\) in a table. \(R_t\) is the reserves remaining in
+year t and \(\pi_t\) is the discounted profits in each year (without
+costs, they are just equal to \(\rho^tp_tq_t\) ). {[}Hint: it is easiest
+to start with the price in the last period and work backwards through
+time.{]}
+
+\hypertarget{a.}{%
+\subsubsection{A.}\label{a.}}
+
+List the values of \(t\), \(p_t\), \(q_t\), \(R_t\), and \(\pi_t\) in a
+table below. What should be the final (year T) values of \(p_T\) and
+\(R_T\)? Why? Does the resource get more scarce over time? What is your
+evidence?
+
+{\textbf{The final year T is 36, \(p_t\)=40, and \(R_t\)=0. The resource
+becomes more scarce over time because it is an exhaustible resource that
+will eventually be depleted. As we can see in the table, both quantity
+and reserves slowly deplete over time. If there are no quantities and
+reserves, profits will also be 0. }}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{exhaust\_func }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(a, b, c, delta, R0, T) \{}
+  
+\NormalTok{  t}\OtherTok{=}\FunctionTok{seq}\NormalTok{(}\DecValTok{0}\NormalTok{,T)}
+  
+\NormalTok{  price}\OtherTok{=}\FunctionTok{vector}\NormalTok{(}\AttributeTok{mode=}\StringTok{"numeric"}\NormalTok{, }\AttributeTok{length=}\FunctionTok{length}\NormalTok{(t))}
+\NormalTok{  quantity}\OtherTok{=}\FunctionTok{vector}\NormalTok{(}\AttributeTok{mode=}\StringTok{"numeric"}\NormalTok{, }\AttributeTok{length=}\FunctionTok{length}\NormalTok{(t))}
+\NormalTok{  reserves}\OtherTok{=}\FunctionTok{vector}\NormalTok{(}\AttributeTok{mode=}\StringTok{"numeric"}\NormalTok{, }\AttributeTok{length=}\FunctionTok{length}\NormalTok{(t))}
+\NormalTok{  profits}\OtherTok{=}\FunctionTok{vector}\NormalTok{(}\AttributeTok{mode=}\StringTok{"numeric"}\NormalTok{, }\AttributeTok{length=}\FunctionTok{length}\NormalTok{(t))}
+  
+\NormalTok{  price[T}\SpecialCharTok{+}\DecValTok{1}\NormalTok{]}\OtherTok{=}\NormalTok{a}
+\NormalTok{  reserves[}\DecValTok{1}\NormalTok{]}\OtherTok{=}\NormalTok{R0}
+  
+  \ControlFlowTok{for}\NormalTok{(i }\ControlFlowTok{in}\NormalTok{ (T}\SpecialCharTok{+}\DecValTok{1}\NormalTok{)}\SpecialCharTok{:}\DecValTok{2}\NormalTok{) \{}
+\NormalTok{    quantity[i]}\OtherTok{=}\NormalTok{(a}\SpecialCharTok{{-}}\NormalTok{price[i])}\SpecialCharTok{/}\NormalTok{b}
+\NormalTok{    price[i}\DecValTok{{-}1}\NormalTok{]}\OtherTok{=}\NormalTok{(price[i]}\SpecialCharTok{+}\NormalTok{c}\SpecialCharTok{*}\NormalTok{delta)}\SpecialCharTok{/}\NormalTok{(}\DecValTok{1}\SpecialCharTok{+}\NormalTok{delta)}
+\NormalTok{  \}}
+  
+\NormalTok{  quantity[}\DecValTok{1}\NormalTok{]}\OtherTok{=}\NormalTok{(a}\SpecialCharTok{{-}}\NormalTok{price[}\DecValTok{1}\NormalTok{])}\SpecialCharTok{/}\NormalTok{b}
+  \CommentTok{\#price[1]=a/(1+delta) \#leave?}
+  \CommentTok{\#reserves[1]=R0}
+\NormalTok{  profits[}\DecValTok{1}\NormalTok{]}\OtherTok{=}\NormalTok{price[}\DecValTok{1}\NormalTok{]}\SpecialCharTok{*}\NormalTok{quantity[}\DecValTok{1}\NormalTok{]}
+  
+  \ControlFlowTok{for}\NormalTok{(i }\ControlFlowTok{in} \DecValTok{2}\SpecialCharTok{:}\NormalTok{(T}\SpecialCharTok{+}\DecValTok{1}\NormalTok{)) \{}
+\NormalTok{    reserves[i]}\OtherTok{=}\NormalTok{reserves[i}\DecValTok{{-}1}\NormalTok{]}\SpecialCharTok{{-}}\NormalTok{quantity[i}\DecValTok{{-}1}\NormalTok{]}
+\NormalTok{    profits[i]}\OtherTok{=}\DecValTok{1}\SpecialCharTok{/}\NormalTok{(}\DecValTok{1}\SpecialCharTok{+}\NormalTok{delta)}\SpecialCharTok{*}\NormalTok{price[i]}\SpecialCharTok{*}\NormalTok{quantity[i]}
+\NormalTok{  \}}
+  
+  \FunctionTok{return}\NormalTok{(}\FunctionTok{data.frame}\NormalTok{(}\StringTok{"time"}\OtherTok{=}\NormalTok{t, }\StringTok{"price"}\OtherTok{=}\NormalTok{price, }\StringTok{"quantity"}\OtherTok{=}\NormalTok{quantity, }\StringTok{"reserves"}\OtherTok{=}\NormalTok{reserves, }\StringTok{"profits"}\OtherTok{=}\NormalTok{profits))}
+\NormalTok{\}}
+
+\NormalTok{exhaust\_a\_df }\OtherTok{\textless{}{-}} \FunctionTok{exhaust\_func}\NormalTok{(}\AttributeTok{a=}\DecValTok{40}\NormalTok{, }\AttributeTok{b=}\DecValTok{1}\NormalTok{, }\AttributeTok{R0=}\FloatTok{778.1259}\NormalTok{, }\AttributeTok{delta=}\FloatTok{0.05}\NormalTok{, }\AttributeTok{c=}\DecValTok{0}\NormalTok{, }\AttributeTok{T=}\DecValTok{36}\NormalTok{)}
+
+\FunctionTok{kable}\NormalTok{(exhaust\_a\_df)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}rrrrr@{}}
+\toprule\noalign{}
+time & price & quantity & reserves & profits \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+0 & 6.906297 & 33.093703 & 778.1259000 & 228.55493 \\
+1 & 7.251611 & 32.748389 & 745.0321966 & 226.17008 \\
+2 & 7.614192 & 32.385808 & 712.2838080 & 234.84930 \\
+3 & 7.994902 & 32.005098 & 679.8980000 & 243.69296 \\
+4 & 8.394647 & 31.605353 & 647.8929016 & 252.68169 \\
+5 & 8.814379 & 31.185621 & 616.2875482 & 261.79227 \\
+6 & 9.255098 & 30.744902 & 585.1019272 & 270.99722 \\
+7 & 9.717853 & 30.282147 & 554.3570252 & 280.26424 \\
+8 & 10.203746 & 29.796254 & 524.0748780 & 289.55562 \\
+9 & 10.713933 & 29.286067 & 494.2786235 & 298.82758 \\
+10 & 11.249629 & 28.750371 & 464.9925563 & 308.02954 \\
+11 & 11.812111 & 28.187889 & 436.2421857 & 317.10331 \\
+12 & 12.402716 & 27.597284 & 408.0542965 & 325.98217 \\
+13 & 13.022852 & 26.977148 & 380.4570129 & 334.58991 \\
+14 & 13.673995 & 26.326005 & 353.4798652 & 342.83967 \\
+15 & 14.357695 & 25.642305 & 327.1538600 & 350.63275 \\
+16 & 15.075579 & 24.924421 & 301.5115546 & 357.85722 \\
+17 & 15.829358 & 24.170642 & 276.5871339 & 364.38643 \\
+18 & 16.620826 & 23.379174 & 252.4164922 & 370.07732 \\
+19 & 17.451867 & 22.548133 & 229.0373184 & 374.76859 \\
+20 & 18.324461 & 21.675539 & 206.4891859 & 378.27864 \\
+21 & 19.240684 & 20.759316 & 184.8136468 & 380.40328 \\
+22 & 20.202718 & 19.797282 & 164.0543307 & 380.91324 \\
+23 & 21.212854 & 18.787146 & 144.2570488 & 379.55141 \\
+24 & 22.273497 & 17.726503 & 125.4699028 & 376.02973 \\
+25 & 23.387172 & 16.612828 & 107.7433996 & 370.02578 \\
+26 & 24.556530 & 15.443470 & 91.1305711 & 361.17908 \\
+27 & 25.784357 & 14.215643 & 75.6871013 & 349.08687 \\
+28 & 27.073574 & 12.926426 & 61.4714579 & 333.29957 \\
+29 & 28.427253 & 11.572747 & 48.5450324 & 313.31562 \\
+30 & 29.848616 & 10.151384 & 36.9722856 & 288.57597 \\
+31 & 31.341047 & 8.658953 & 26.8209015 & 258.45777 \\
+32 & 32.908099 & 7.091901 & 18.1619481 & 222.26760 \\
+33 & 34.553504 & 5.446496 & 11.0700471 & 179.23383 \\
+34 & 36.281179 & 3.718821 & 5.6235511 & 128.49829 \\
+35 & 38.095238 & 1.904762 & 1.9047302 & 69.10701 \\
+36 & 40.000000 & 0.000000 & -0.0000317 & 0.00000 \\
+\end{longtable}
+
+\hypertarget{b.}{%
+\subsubsection{B.}\label{b.}}
+
+Now consider extensions of the model in A. First, assume there is a
+constant marginal cost of extraction c = 3.178025. The discount profits
+in each year are now \(\pi_t=\rho^t (p_t-c)q_t\). Second, assume
+marginal costs are zero again but the initial stock of reserves
+increases to \(R_0\) = 948.2253 units. Third, assume marginal costs are
+still zero and reserves go back to \(R_0\)=778.1259, but the demand
+curve parameters are now \(a\)=40, \(b\)=0.75194. A lower value of \(b\)
+means that the demand curve rotates outward around \(a\)=40.
+
+List the values of \(t\), \(p_t\), \(q_t\), \(R_t\), and \(\pi_t\) for
+the three cases.
+
+{\textbf{Solution}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{exhaust\_b}\FloatTok{.1}\NormalTok{\_df }\OtherTok{\textless{}{-}} \FunctionTok{exhaust\_func}\NormalTok{(}\AttributeTok{a=}\DecValTok{40}\NormalTok{, }\AttributeTok{b=}\DecValTok{1}\NormalTok{, }\AttributeTok{R0=}\FloatTok{778.1259}\NormalTok{, }\AttributeTok{delta=}\FloatTok{0.05}\NormalTok{, }\AttributeTok{c=}\FloatTok{3.178025}\NormalTok{, }\AttributeTok{T=}\DecValTok{38}\NormalTok{)}
+
+\FunctionTok{kable}\NormalTok{(exhaust\_b}\FloatTok{.1}\NormalTok{\_df)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}rrrrr@{}}
+\toprule\noalign{}
+time & price & quantity & reserves & profits \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+0 & 8.944544 & 31.055456 & 778.1259000 & 277.77689 \\
+1 & 9.232870 & 30.767130 & 747.0704438 & 270.54182 \\
+2 & 9.535612 & 30.464388 & 716.3033136 & 276.66341 \\
+3 & 9.853491 & 30.146509 & 685.8389256 & 282.90320 \\
+4 & 10.187265 & 29.812735 & 655.6924170 & 289.24783 \\
+5 & 10.537727 & 29.462273 & 625.8796816 & 295.68132 \\
+6 & 10.905712 & 29.094288 & 596.4174083 & 302.18469 \\
+7 & 11.292096 & 28.707904 & 567.3231200 & 308.73563 \\
+8 & 11.697800 & 28.302200 & 538.6152161 & 315.30807 \\
+9 & 12.123788 & 27.876212 & 510.3130157 & 321.87171 \\
+10 & 12.571077 & 27.428923 & 482.4368041 & 328.39152 \\
+11 & 13.040729 & 26.959271 & 455.0078806 & 334.82719 \\
+12 & 13.533864 & 26.466136 & 428.0486097 & 341.13247 \\
+13 & 14.051656 & 25.948344 & 401.5824740 & 347.25448 \\
+14 & 14.595338 & 25.404662 & 375.6341303 & 353.13298 \\
+15 & 15.166203 & 24.833796 & 350.2294682 & 358.69944 \\
+16 & 15.765612 & 24.234388 & 325.3956716 & 363.87615 \\
+17 & 16.394992 & 23.605008 & 301.1612840 & 368.57516 \\
+18 & 17.055840 & 22.944160 & 277.5562758 & 372.69707 \\
+19 & 17.749731 & 22.250269 & 254.6121159 & 376.12980 \\
+20 & 18.478316 & 21.521684 & 232.3618468 & 378.74712 \\
+21 & 19.243331 & 20.756669 & 210.8401630 & 380.40710 \\
+22 & 20.046596 & 19.953404 & 190.0834937 & 380.95031 \\
+23 & 20.890025 & 19.109975 & 170.1300897 & 380.19796 \\
+24 & 21.775624 & 18.224376 & 151.0201143 & 377.94967 \\
+25 & 22.705504 & 17.294496 & 132.7957388 & 373.98119 \\
+26 & 23.681878 & 16.318122 & 115.5012433 & 368.04169 \\
+27 & 24.707071 & 15.292929 & 99.1831218 & 359.85093 \\
+28 & 25.783524 & 14.216477 & 83.8901930 & 349.09605 \\
+29 & 26.913798 & 13.086202 & 69.6737165 & 335.42799 \\
+30 & 28.100587 & 11.899413 & 56.5875148 & 318.45761 \\
+31 & 29.346715 & 10.653285 & 44.6881019 & 297.75135 \\
+32 & 30.655150 & 9.344850 & 34.0348171 & 272.82646 \\
+33 & 32.029006 & 7.970994 & 24.6899668 & 243.14573 \\
+34 & 33.471555 & 6.528445 & 16.7189727 & 208.11163 \\
+35 & 34.986232 & 5.013769 & 10.1905276 & 167.05987 \\
+36 & 36.576642 & 3.423358 & 5.1767591 & 119.25233 \\
+37 & 38.246573 & 1.753427 & 1.7534009 & 63.86913 \\
+38 & 40.000000 & 0.000000 & -0.0000265 & 0.00000 \\
+\end{longtable}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{exhaust\_b}\FloatTok{.2}\NormalTok{\_df }\OtherTok{\textless{}{-}} \FunctionTok{exhaust\_func}\NormalTok{(}\AttributeTok{a=}\DecValTok{40}\NormalTok{, }\AttributeTok{b=}\DecValTok{1}\NormalTok{, }\AttributeTok{R0=}\FloatTok{948.2253}\NormalTok{, }\AttributeTok{delta=}\FloatTok{0.05}\NormalTok{, }\AttributeTok{c=}\DecValTok{0}\NormalTok{, }\AttributeTok{T=}\DecValTok{41}\NormalTok{)}
+
+\FunctionTok{kable}\NormalTok{(exhaust\_b}\FloatTok{.2}\NormalTok{\_df)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}rrrrr@{}}
+\toprule\noalign{}
+time & price & quantity & reserves & profits \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+0 & 5.411264 & 34.588736 & 948.2253000 & 187.16878 \\
+1 & 5.681827 & 34.318173 & 913.6365641 & 185.70470 \\
+2 & 5.965919 & 34.034081 & 879.3183914 & 193.37577 \\
+3 & 6.264215 & 33.735785 & 845.2843100 & 201.26495 \\
+4 & 6.577425 & 33.422575 & 811.5485246 & 209.36618 \\
+5 & 6.906297 & 33.093703 & 778.1259499 & 217.67136 \\
+6 & 7.251611 & 32.748389 & 745.0322465 & 226.17008 \\
+7 & 7.614192 & 32.385808 & 712.2838579 & 234.84930 \\
+8 & 7.994902 & 32.005098 & 679.8980499 & 243.69296 \\
+9 & 8.394647 & 31.605353 & 647.8929515 & 252.68169 \\
+10 & 8.814379 & 31.185621 & 616.2875982 & 261.79227 \\
+11 & 9.255098 & 30.744902 & 585.1019772 & 270.99722 \\
+12 & 9.717853 & 30.282147 & 554.3570751 & 280.26424 \\
+13 & 10.203746 & 29.796254 & 524.0749280 & 289.55562 \\
+14 & 10.713933 & 29.286067 & 494.2786734 & 298.82758 \\
+15 & 11.249629 & 28.750371 & 464.9926062 & 308.02954 \\
+16 & 11.812111 & 28.187889 & 436.2422356 & 317.10331 \\
+17 & 12.402716 & 27.597284 & 408.0543465 & 325.98217 \\
+18 & 13.022852 & 26.977148 & 380.4570629 & 334.58991 \\
+19 & 13.673995 & 26.326005 & 353.4799151 & 342.83967 \\
+20 & 14.357695 & 25.642305 & 327.1539100 & 350.63275 \\
+21 & 15.075579 & 24.924421 & 301.5116045 & 357.85722 \\
+22 & 15.829358 & 24.170642 & 276.5871839 & 364.38643 \\
+23 & 16.620826 & 23.379174 & 252.4165421 & 370.07732 \\
+24 & 17.451867 & 22.548133 & 229.0373683 & 374.76859 \\
+25 & 18.324461 & 21.675539 & 206.4892358 & 378.27864 \\
+26 & 19.240684 & 20.759316 & 184.8136967 & 380.40328 \\
+27 & 20.202718 & 19.797282 & 164.0543806 & 380.91324 \\
+28 & 21.212854 & 18.787146 & 144.2570988 & 379.55141 \\
+29 & 22.273497 & 17.726503 & 125.4699528 & 376.02973 \\
+30 & 23.387172 & 16.612828 & 107.7434495 & 370.02578 \\
+31 & 24.556530 & 15.443470 & 91.1306211 & 361.17908 \\
+32 & 25.784357 & 14.215643 & 75.6871512 & 349.08687 \\
+33 & 27.073574 & 12.926426 & 61.4715079 & 333.29957 \\
+34 & 28.427253 & 11.572747 & 48.5450824 & 313.31562 \\
+35 & 29.848616 & 10.151384 & 36.9723356 & 288.57597 \\
+36 & 31.341047 & 8.658953 & 26.8209514 & 258.45777 \\
+37 & 32.908099 & 7.091901 & 18.1619981 & 222.26760 \\
+38 & 34.553504 & 5.446496 & 11.0700971 & 179.23383 \\
+39 & 36.281179 & 3.718821 & 5.6236010 & 128.49829 \\
+40 & 38.095238 & 1.904762 & 1.9047802 & 69.10701 \\
+41 & 40.000000 & 0.000000 & 0.0000182 & 0.00000 \\
+\end{longtable}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{exhaust\_b}\FloatTok{.3}\NormalTok{\_df }\OtherTok{\textless{}{-}} \FunctionTok{exhaust\_func}\NormalTok{(}\AttributeTok{a=}\DecValTok{40}\NormalTok{, }\AttributeTok{b=}\FloatTok{0.75194}\NormalTok{, }\AttributeTok{R0=}\FloatTok{778.1259}\NormalTok{, }\AttributeTok{delta=}\FloatTok{0.05}\NormalTok{, }\AttributeTok{c=}\DecValTok{0}\NormalTok{, }\AttributeTok{T=}\DecValTok{30}\NormalTok{)}
+
+\FunctionTok{kable}\NormalTok{(exhaust\_b}\FloatTok{.3}\NormalTok{\_df)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}rrrrr@{}}
+\toprule\noalign{}
+time & price & quantity & reserves & profits \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+0 & 9.255098 & 40.887441 & 778.1259000 & 378.41727 \\
+1 & 9.717853 & 40.272026 & 737.2384594 & 372.72154 \\
+2 & 10.203746 & 39.625841 & 696.9664335 & 385.07809 \\
+3 & 10.713933 & 38.947346 & 657.3405930 & 397.40880 \\
+4 & 11.249629 & 38.234927 & 618.3932472 & 409.64643 \\
+5 & 11.812111 & 37.486886 & 580.1583207 & 421.71358 \\
+6 & 12.402716 & 36.701444 & 542.6714346 & 433.52152 \\
+7 & 13.022852 & 35.876729 & 505.9699909 & 444.96890 \\
+8 & 13.673995 & 35.010779 & 470.0932617 & 455.94020 \\
+9 & 14.357695 & 34.101531 & 435.0824827 & 466.30416 \\
+10 & 15.075579 & 33.146821 & 400.9809514 & 475.91193 \\
+11 & 15.829358 & 32.144376 & 367.8341303 & 484.59508 \\
+12 & 16.620826 & 31.091808 & 335.6897548 & 492.16336 \\
+13 & 17.451867 & 29.986611 & 304.5979472 & 498.40225 \\
+14 & 18.324461 & 28.826155 & 274.6113359 & 503.07024 \\
+15 & 19.240684 & 27.607676 & 245.7851807 & 505.89578 \\
+16 & 20.202718 & 26.328273 & 218.1775045 & 506.57399 \\
+17 & 21.212854 & 24.984900 & 191.8492311 & 504.76290 \\
+18 & 22.273497 & 23.574359 & 166.8643307 & 500.07943 \\
+19 & 23.387172 & 22.093290 & 143.2899721 & 492.09482 \\
+20 & 24.556530 & 20.538168 & 121.1966821 & 480.32965 \\
+21 & 25.784357 & 18.905289 & 100.6585144 & 464.24831 \\
+22 & 27.073574 & 17.190767 & 81.7532249 & 443.25287 \\
+23 & 28.427253 & 15.390519 & 64.5624577 & 416.67636 \\
+24 & 29.848616 & 13.500258 & 49.1719388 & 383.77526 \\
+25 & 31.341047 & 11.515484 & 35.6716806 & 343.72127 \\
+26 & 32.908099 & 9.431472 & 24.1561962 & 295.59220 \\
+27 & 34.553504 & 7.243259 & 14.7247242 & 238.36188 \\
+28 & 36.281179 & 4.945635 & 7.4814654 & 170.88902 \\
+29 & 38.095238 & 2.533130 & 2.5358303 & 91.90495 \\
+30 & 40.000000 & 0.000000 & 0.0027001 & 0.00000 \\
+\end{longtable}
+
+\hypertarget{c.}{%
+\subsubsection{C.}\label{c.}}
+
+What is the final year \(T\) for the three cases? Explain why they are
+different from part A.
+
+{\textbf{The final year \(T\) for the tree cases is 38, 41, and 30
+respectively. This is different from A because the parameters have been
+altered. In the first scenario, the marginal cost is 3.178025 and in A
+the marginal cost is 0, this resulted in T changing from 36 in A to 38.
+When the marginal cost is no longer 0, the price and profits for an
+exhaustible resource will increase, while the reserves decrease at a
+slower rate as compared to A, thus it takes a little longer to deplete
+the reserves.}}
+
+{\textbf{In the second scenario, when R0 changes from 778.1259 to
+948.2253, the price, quantity, and profits all decrease, but the
+reserves increased. Since we start with higher initial reserves, it
+takes longer to deplete the reserves, thus why T=41.}}
+
+{ \textbf{Finally, in the last scenario, b decreases from 1 to 0.75194.
+In this scenario, prices, quantities, and profits are the highest. This
+could be indicating inelastic demand due to the continued (and even
+higher demand) despite higher prices. Since producers are profit
+maximizers, they will continue to meet the demand with high prices in
+order to maximize profit. However, this results in a rapid depletion of
+the exhaustible resource, thus why this T is the shortest. }}
+
+\hypertarget{d.}{%
+\subsubsection{D.}\label{d.}}
+
+Compare the path of prices in the three cases to that in part A. Explain
+the differences.
+
+{\textbf{In each scenario, the line travels till 40, which is a, our
+choke point. However the price path changes depending on the parameters.
+In Scenario A, the price path is not influenced by cost, and steadily
+increases to the choke point.}}
+
+{\textbf{When there is a cost of extraction, the price path is not as
+steep as A because managers will want to extract at a rate to account
+for their costs. The prices in this scenario are higher than in A in
+order to cover the cost of extraction.}}
+
+{\textbf{In the third scenario where this is no cost of extraction, but
+a higher initial resource, the price curve is the lowest at T0. Since
+there is such a large amount of initial reserves, the manager can price
+it lower and have a larger quantity than in Scenario A.}}
+
+{\textbf{Finally, in the scenario where b is lowered, the price path is
+the steepest as a result of managers wanting to maximize their profit as
+much as possible. As explained before, this is why it has the shortest T
+value. Buyers are not sensitive to the increased price and continue to
+buy, while producers continue to produce to meet demand, leading to a
+steeper price path indicating early depletion. }}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{price\_plot }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{() }\SpecialCharTok{+} 
+  \FunctionTok{geom\_line}\NormalTok{(}\AttributeTok{data=}\NormalTok{exhaust\_a\_df, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x=}\NormalTok{time, }\AttributeTok{y=}\NormalTok{price, }\AttributeTok{color=}\StringTok{"Scenario A"}\NormalTok{), }\AttributeTok{show.legend =} \ConstantTok{TRUE}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{geom\_line}\NormalTok{(}\AttributeTok{data=}\NormalTok{exhaust\_b}\FloatTok{.1}\NormalTok{\_df, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x=}\NormalTok{time, }\AttributeTok{y=}\NormalTok{price, }\AttributeTok{color=}\StringTok{"Scenario where c=3.178025"}\NormalTok{), }\AttributeTok{show.legend =} \ConstantTok{TRUE}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{geom\_line}\NormalTok{(}\AttributeTok{data=}\NormalTok{exhaust\_b}\FloatTok{.2}\NormalTok{\_df, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x=}\NormalTok{time, }\AttributeTok{y=}\NormalTok{price, }\AttributeTok{color=}\StringTok{"Scenario where R0=948.2253"}\NormalTok{), }\AttributeTok{show.legend =} \ConstantTok{TRUE}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{geom\_line}\NormalTok{(}\AttributeTok{data=}\NormalTok{exhaust\_b}\FloatTok{.3}\NormalTok{\_df, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x=}\NormalTok{time, }\AttributeTok{y=}\NormalTok{price, }\AttributeTok{color=}\StringTok{"Scenario where b=0.75194"}\NormalTok{), }\AttributeTok{show.legend =} \ConstantTok{TRUE}\NormalTok{)}\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{reserves=}\StringTok{"Prices in different scenarios across T"}\NormalTok{, }\AttributeTok{x=}\StringTok{"Time"}\NormalTok{, }\AttributeTok{y=}\StringTok{"Price"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{scale\_color\_manual}\NormalTok{(}\AttributeTok{values=}\FunctionTok{c}\NormalTok{(}\StringTok{"Scenario A"}\OtherTok{=}\StringTok{"blue"}\NormalTok{, }\StringTok{"Scenario where c=3.178025"}\OtherTok{=}\StringTok{"red"}\NormalTok{, }\StringTok{"Scenario where R0=948.2253"}\OtherTok{=}\StringTok{"green"}\NormalTok{, }\StringTok{"Scenario where b=0.75194"}\OtherTok{=}\StringTok{"orange"}\NormalTok{)) }\SpecialCharTok{+}
+  \FunctionTok{theme\_classic}\NormalTok{()}
+
+\NormalTok{price\_plot}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{ESM242_HW4_F23_files/figure-latex/unnamed-chunk-6-1.pdf}
+
+\hypertarget{e.}{%
+\subsubsection{E.}\label{e.}}
+
+What happens to the present discounted value of profits (in other words,
+the value of the reserves \(R_0\)) in the three cases compared to part
+A? Explain the differences.
+
+\textbf{In all scenarios, the present discounted value of profits
+increase before declining as the reserves become depleted. All the
+scenarios start with some amount of profit because there are reserves of
+the exhaustible resource that can readily be extracted and sold. When
+the present value of discounted profits decline, this is typically much
+sharper than when they are increasing because the exhaustible resource
+is growing smaller and smaller with no recharge. Managers are stuck in a
+place of needing to make a profit, so they increase prices, and the
+combined effect of less buyers as a result of the increase of price AND
+declining reserves, their profits will decline much quicker than they
+have been earning. In addition, since this is an exhaustible resource,
+managers will continue to extract until there is none left, thus why
+each curve ends at 0.}
+
+{\textbf{In Scenario A, profits steadily increase before declining
+around \(T_22\). The same happens for the scenario where the cost of
+extraction is 3.178025. The difference between these two is that when
+there is a cost of extraction, the present discounted value of profits
+begin higher because of the increase in price to account for the cost of
+extraction. In addition, this curve is more stretched out because T=38,
+meaning that the present discounted value of profits is more spread out
+across time. }}
+
+{\textbf{In the scenario where R0 is higher, the profits start out lower
+because of the lower price compared to scenario A, despite both not
+having a cost of extraction. However, because of the larger initial
+reserves, this scenario's present discounted value of profits increases
+for a longer time than A simply because it has more initial reserves to
+begin with. As stated previously, the larger amount of initial reserves
+allows this scenario to have the longest time series before depletion.}}
+
+{\textbf{Finally, the scenario where b is lowered has the most dramatic
+increase and decline in present discounted value of profits. This is due
+to a rapid depletion of resources in a scenario where demand is high and
+inelastic.}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{profits\_plot }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{() }\SpecialCharTok{+} 
+  \FunctionTok{geom\_line}\NormalTok{(}\AttributeTok{data=}\NormalTok{exhaust\_a\_df, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x=}\NormalTok{time, }\AttributeTok{y=}\NormalTok{profits, }\AttributeTok{color=}\StringTok{"Scenario A"}\NormalTok{), }\AttributeTok{show.legend =} \ConstantTok{TRUE}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{geom\_line}\NormalTok{(}\AttributeTok{data=}\NormalTok{exhaust\_b}\FloatTok{.1}\NormalTok{\_df, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x=}\NormalTok{time, }\AttributeTok{y=}\NormalTok{profits, }\AttributeTok{color=}\StringTok{"Scenario where c=3.178025"}\NormalTok{), }\AttributeTok{show.legend =} \ConstantTok{TRUE}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{geom\_line}\NormalTok{(}\AttributeTok{data=}\NormalTok{exhaust\_b}\FloatTok{.2}\NormalTok{\_df, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x=}\NormalTok{time, }\AttributeTok{y=}\NormalTok{profits, }\AttributeTok{color=}\StringTok{"Scenario where R0=948.2253"}\NormalTok{), }\AttributeTok{show.legend =} \ConstantTok{TRUE}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{geom\_line}\NormalTok{(}\AttributeTok{data=}\NormalTok{exhaust\_b}\FloatTok{.3}\NormalTok{\_df, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x=}\NormalTok{time, }\AttributeTok{y=}\NormalTok{profits, }\AttributeTok{color=}\StringTok{"Scenario where b=0.75194"}\NormalTok{), }\AttributeTok{show.legend =} \ConstantTok{TRUE}\NormalTok{)}\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title=}\StringTok{"Present discounted profits in different scenarios across T"}\NormalTok{, }\AttributeTok{x=}\StringTok{"Time"}\NormalTok{, }\AttributeTok{y=}\StringTok{"Profits"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{scale\_color\_manual}\NormalTok{(}\AttributeTok{values=}\FunctionTok{c}\NormalTok{(}\StringTok{"Scenario A"}\OtherTok{=}\StringTok{"blue"}\NormalTok{, }\StringTok{"Scenario where c=3.178025"}\OtherTok{=}\StringTok{"red"}\NormalTok{, }\StringTok{"Scenario where R0=948.2253"}\OtherTok{=}\StringTok{"green"}\NormalTok{, }\StringTok{"Scenario where b=0.75194"}\OtherTok{=}\StringTok{"orange"}\NormalTok{)) }\SpecialCharTok{+}
+  \FunctionTok{theme\_classic}\NormalTok{()}
+
+\NormalTok{profits\_plot}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{ESM242_HW4_F23_files/figure-latex/unnamed-chunk-7-1.pdf}
+
+\end{document}
