@@ -106,37 +106,25 @@ kable(exhaust_b.3_df)
 
 What is the final year $T$ for the three cases? Explain why they are different from part A.
 
-<span style="color: blue;">**The final year $T$ for the tree cases is 38, 41, and 30 respectively. This is different from A because the parameters have been altered. In the first scenario, the marginal cost is 3.178025 and in A the marginal cost is 0, this resulted in T changing from 36 in A to 38. When the marginal cost is no longer 0, the price and profits for an exhaustible resource will increase, while the reserves decrease at a slower rate as compared to A, thus it takes a little longer to deplete the reserves. In the second scenario, when R0 changes from 778.1259 to 948.2253, the price, quantity, and profits all decrease, but the reserves increased. Since we start with higher initial reserves, it takes longer to deplete the reserves, thus why T=41. Finally, in the last scenario, b decreases from 1 to 0.75194. In this scenario, prices, quantities, and profits are the highest. This could be indicating inelastic demand due to the continued (and even higher demand) despite higher prices. Since producers are profit maximizers, they will continue to meet the demand with high prices in order to maximize profit. However, this results in a rapid depletion of the exhaustible resource, thus why this T is the shortest. **</span>
+<span style="color: blue;">**The final year $T$ for the tree cases is 38, 41, and 30 respectively. This is different from A because the parameters have been altered. In the first scenario, the marginal cost is 3.178025 and in A the marginal cost is 0, this resulted in T changing from 36 in A to 38. When the marginal cost is no longer 0, the price and profits for an exhaustible resource will increase, while the reserves decrease at a slower rate as compared to A, thus it takes a little longer to deplete the reserves.**</span>
 
+<span style="color: blue;">**In the second scenario, when R0 changes from 778.1259 to 948.2253, the price, quantity, and profits all decrease, but the reserves increased. Since we start with higher initial reserves, it takes longer to deplete the reserves, thus why T=41.**</span>
 
-<span style="color: blue;">
-
-</span>
-
-
-```{r}
-T_plot <- ggplot() + 
-  geom_line(data=exhaust_a_df, aes(x=time, y=time, color="Scenario A"), show.legend = TRUE) +
-  geom_line(data=exhaust_b.1_df, aes(x=time, y=time, color="Scenario where c=3.178025"), show.legend = TRUE) +
-  geom_line(data=exhaust_b.2_df, aes(x=time, y=time, color="Scenario where R0=948.2253"), show.legend = TRUE) +
-  geom_line(data=exhaust_b.3_df, aes(x=time, y=time, color="Scenario where b=0.75194"), show.legend = TRUE)+
-  labs(title="Prices in different scenarios across T", x="Time", y="Time") +
-  scale_color_manual(values=c("Scenario A"="blue", "Scenario where c=3.178025"="red", "Scenario where R0=948.2253"="green", "Scenario where b=0.75194"="orange")) +
-  theme_classic()
-
-T_plot
-```
+<span style="color: blue;"> **Finally, in the last scenario, b decreases from 1 to 0.75194. In this scenario, prices, quantities, and profits are the highest. This could be indicating inelastic demand due to the continued (and even higher demand) despite higher prices. Since producers are profit maximizers, they will continue to meet the demand with high prices in order to maximize profit. However, this results in a rapid depletion of the exhaustible resource, thus why this T is the shortest. **</span>
 
 
 ### D. 
 
 Compare the path of prices in the three cases to that in part A. Explain the differences.
 
-<span style="color: blue;">**In each scenario, the line travels till 40, which is a, our choke point. However the price path changes depending on the parameters. In Scenario A, the **</span>
+<span style="color: blue;">**In each scenario, the line travels till 40, which is a, our choke point. However the price path changes depending on the parameters. In Scenario A, the price path is not influenced by cost, and steadily increases to the choke point.**</span>
 
-<span style="color: blue;">
+<span style="color: blue;">**When there is a cost of extraction, the price path is not as steep as A because managers will want to extract at a rate to account for their costs. The prices in this scenario are higher than in A in order to cover the cost of extraction.**</span>
 
-</span>
+<span style="color: blue;">**In the third scenario where this is no cost of extraction, but a higher initial resource, the price curve is the lowest at T0. Since there is such a large amount of initial reserves, the manager can price it lower and have a larger quantity than in Scenario A.**</span>
+
+<span style="color: blue;">**Finally, in the scenario where b is lowered, the price path is the steepest as a result of managers wanting to maximize their profit as much as possible. As explained before, this is why it has the shortest T value. Buyers are not sensitive to the increased price and continue to buy, while producers continue to produce to meet demand, leading to a steeper price path indicating early depletion. **</span>
+
 
 ```{r}
 price_plot <- ggplot() + 
@@ -167,7 +155,7 @@ profits_plot <- ggplot() +
   geom_line(data=exhaust_b.1_df, aes(x=time, y=profits, color="Scenario where c=3.178025"), show.legend = TRUE) +
   geom_line(data=exhaust_b.2_df, aes(x=time, y=profits, color="Scenario where R0=948.2253"), show.legend = TRUE) +
   geom_line(data=exhaust_b.3_df, aes(x=time, y=profits, color="Scenario where b=0.75194"), show.legend = TRUE)+
-  labs(title="Profits in different scenarios across T", x="Time", y="Profits") +
+  labs(title="Present discounted profits in different scenarios across T", x="Time", y="Profits") +
   scale_color_manual(values=c("Scenario A"="blue", "Scenario where c=3.178025"="red", "Scenario where R0=948.2253"="green", "Scenario where b=0.75194"="orange")) +
   theme_classic()
 
