@@ -27,7 +27,7 @@ Suppose there is an exhaustible resource that is costlessly extracted.  The inve
 
 List the values of $t$, $p_t$, $q_t$, $R_t$, and  $\pi_t$ in a table below.  What should be the final (year T) values of $p_T$ and $R_T$? Why?  Does the resource get more scarce over time?  What is your evidence?
 
-<span style="color: blue;">**The final year T is 46, $p_t$=40, and $R_t$=0. The resource becomes more scarce over time because it is an exhaustible resource that will eventually be depleted. As we can see in the table, both quantity and reserves slowly deplete over time. If there are no quantities and reserves, profits will also be 0. **</span>
+<span style="color: blue;">**The final year T is 36, $p_t$=40, and $R_t$=0. The resource becomes more scarce over time because it is an exhaustible resource that will eventually be depleted. As we can see in the table, both quantity and reserves slowly deplete over time. If there are no quantities and reserves, profits will also be 0. **</span>
 
 ```{r}
 exhaust_func <- function(a, b, c, delta, R0, T) {
