@@ -1,0 +1,361 @@
+---
+title: "HW_3"
+author: "Andrew Plantinga"
+date: "2023-10-24"
+output:
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(nloptr)
+library(knitr)
+```
+
+## Question 1: Forestry Rotation {.tabset}
+
+This problem expands on the forest rotation problem presented in class.  Suppose that a stand of trees is planted in time 0 at a cost of c, grown for $T_1$ years, harvested, replanted at cost c, grown for $T_2$ years, harvested, replanted, and so on.  If we complete six rotations, what should be the values of $T_1$, $T_2$, $T_3$, $T_4$, $T_5$, and $T_6$?  Assume that different values can be chosen for each year and that the stand does not need to be replanted after the sixth harvest.  Use the parameter values a=10, b=53.27, c=250, p=1.5, and $\delta$=0.05.
+
+### A.
+
+Before you solve the problem for six rotations, find the optimal rotation when only one rotation is done.  What is the optimal value of $T_1$?
+
+```{r}
+#objective func for 1 rotation
+
+#State is the total amount of time that has gone by 
+
+one_rotation_func <- function (choice, a, b, c, p, discount) {
+  
+  Q=exp(a-b/choice)
+  benefits=p*Q*exp(-discount*choice)-c 
+    
+  return(-benefits)
+
+}
+options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-8,maxeval=16000)
+
+
+out_1a <- nloptr(
+  x0=10,
+  opts=options,
+  eval_f=one_rotation_func, 
+  lb=0, 
+  a=10, 
+  b=53.27, 
+  c=250, 
+  p=1.5, 
+  discount=0.05)
+
+print(out_1a$solution)
+
+```
+
+
+### B. 
+
+Now solve the problem for six consecutive rotations.  What are the six rotation lengths that you found?
+
+<span style="color: blue;">**The six rotation lengths are: 8.203, 9.872, 12.303, 15.696, 19.701, and 119601.753**
+</span>
+
+
+
+```{r}
+six_rotations_obj_func <- function(choice, a, b, c, p, discount) {
+  
+  state <- vector(mode="numeric", length=0)
+  benefits <- vector(mode="numeric", length=0)
+  
+  Q=exp(a-b/choice[1])
+  state[1]=choice[1]
+  benefits[1]=(p*Q*exp(-discount*state[1])-c) 
+  
+  for(i in 2:6) {
+    Q=exp(a-b/choice[i])
+    state[i]=choice[i]+state[i-1]
+    benefits[i]=(p*Q*exp(-discount*state[i])-c*exp(-discount*state[i-1]))
+  }
+  
+  #t=seq(from=0, time=6)
+  #pv=(p*Q*exp(-discount*t)-c*exp(-discount*t))
+  npv=sum(benefits)
+  return(-npv)
+}
+
+
+options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-8,maxeval=16000)
+
+out_1b <- nloptr(
+  x0=rep(10, 6),
+  opts=options,
+  eval_f=six_rotations_obj_func,
+  lb=rep(0, 6), 
+  a=10, 
+  b=53.27, 
+  c=250, 
+  p=1.5, 
+  discount=0.05
+)
+
+round(out_1b$solution, 3)
+
+round(-out_1b$objective, 3)
+```
+
+
+
+### C.
+
+Explain why $T_1$ through $T_5$ are shorter than $T_6$?
+
+<span style="color: blue;">**$T_1$ to $T_5$ are shorter than $T_6$ is because we are only evaluating the optimal rotation for 6 rotations. The 6th and final rotation is larger because you will want to extract as much as possible because you will no longer be able to benefit after 6 rotations. In addition, there are no additional costs of replanting after the 6th rotation. Thus, you will wait as long as possible, in this case, 32.63 rotations, before harvesting in order to maximize your benefits. From $T_1$ to $T_5$, the optimal rotation length is significantly shorter compared to $T_6$ because you have to spend money to replant the stand and benefit. Thus, the optimal length for $T_1$ to $T_5$ is much shorter. **
+</span>
+
+<span style="color: blue;">
+
+</span>
+
+### D.
+
+What happens to $T_1$ through $T_5$ when the cost of replanting the stand increases to 500? Explain. Why doesn't $T_6$ change with the higher replanting cost?
+
+<span style="color: blue;">**$T_1$ through $T_5$ have increased when the cost of replanting increases to 500 because waiting longer to harvest would mean an increase in benefits, thus covering the increased cost of replanting. If managers still harvested at the previous rotation with cost at 500, they would be losing benefits and profits because they had to spend more on replanting. Only the first 5 rotations would increase because after harvesting each of these rotations, the manager has to spend money again to replant the stand. $T_6$ doesn't change because it is the last rotation for harvesting. Waiting longer to harvest would be of no additional benefit to a manager because there is no need to spend money on replanting again. Thus, you still wait till 32.6 rotations to get the maximum final benefit.**
+</span>
+
+<span style="color: blue;">
+
+
+</span>
+```{r}
+
+## Call the same nloptr from part B but with a different planting cost
+
+out_1d <- nloptr(
+  x0=rep(10, 6),
+  opts=options,
+  eval_f=six_rotations_obj_func,
+  lb=rep(0, 6), 
+  a=10, 
+  b=53.27, 
+  c=500, 
+  p=1.5, 
+  discount=0.05
+)
+
+round(out_1d$solution, 3)
+
+```
+
+
+### E.
+
+Compare your answer to part a (the single rotation) to $T_6$. Why are they the same?
+
+<span style="color: blue;">**The single rotation and $T_6$ are the same because there is no replanting cost after the rotations. Since there is no cost to replanting, the manager should wait as long as possible to maximize the benefits.**
+</span>
+
+<span style="color: blue;">
+
+
+</span>
+
+
+### F
+
+Now solve for the optimal rotation when an infinite number of rotations are done.  Compute the present value of net revenues (i.e., $objective).  Compare this to the present value of net revenues when only six rotations are done.  Are they close in magnitude?  Why?
+
+Compare your answer to part a (the single rotation) to $T_6$. Why are they the same?
+
+<span style="color: blue;">**The present value when there are infinite rotations: 1286.727. When the stand is managed for 6 rotations, the present value is 1286.552. These values are very close to each other and this is because in both scenarios, management is exhausting the same amount of resources.**
+</span>
+
+<span style="color: blue;">
+
+
+</span>
+
+```{r}
+infinite_rotation_obj_func <- function(choice, a, b, c, p, discount) {
+  
+  state <- vector(mode="numeric", length=0)
+  benefits <- vector(mode="numeric", length=0)
+  
+  Q=exp(a-b/choice)
+  benefits=(p*Q*exp(-discount*choice)-c)/(1-exp(-discount*choice))
+  
+  return(-benefits)
+  
+}
+
+out_1f <- nloptr(
+  x0=10,
+  opts=options,
+  eval_f=infinite_rotation_obj_func,
+  lb=0,
+  a=10, 
+  b=53.27, 
+  c=250, 
+  p=1.5, 
+  discount=0.05
+)
+
+print(out_1f$solution)
+print(-out_1f$objective)
+
+round(-out_1b$objective, 3)
+```
+
+
+## Question 2: Varying Initial Age {.tabset}
+
+In this problem, you are asked to find the optimal rotation when the initial age of the stand is not zero.  The key question is whether a positive initial age should change the solution.  That is, if T* is the optimal rotation age for a stand starting at age 0, will it still be the same optimal rotation age for a stand starting at age $A$>0?  The volume of timber evolves according to $Q(T)=e^{a-b/T}$  where a=13, b=185, and T is the age of the trees. The price of timber is p=1.78 and the cost of planting the stand at the start of each rotation is 1000.  The discount rate is $\delta$=0.05.  
+
+### A.
+	
+If the stand is grown for an infinite number of rotations, what is the optimal rotation length when the initial age of the stand is zero?  Call this value $T^*$.  What is the present discounted value of net timber revenues from an infinite number of rotations?  Call this value $\pi_\infty$.
+
+<span style="color: blue;">**The optimal rotation length is $T^*$=60.138. The present discounted value is $\pi_\infty$=837.667.**</span>
+
+
+
+```{r}
+
+infinity_2_obj_func <- function(choice, a, b, c, p, A, discount) {
+  
+  Q=(exp)(a-b/(A+choice))
+  benefits=(p*Q*exp(-discount*choice)-c)/(1-exp(-discount*choice))
+  
+  return(-benefits)
+}
+  
+#Use this options list
+options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15,maxeval=16000)
+
+out_2a <- nloptr(
+  x0=10,
+  opts=options,
+  eval_f=infinity_2_obj_func,
+  lb=0,
+  a=13,
+  b=185,
+  c=1000,
+  p=1.78,
+  A=0,
+  discount=0.05
+)
+
+round(out_2a$solution, 3)
+round(-out_2a$objective, 3)
+```
+
+
+
+### B.
+
+Suppose that the initial age of the stand is A and $T_1$ is the additional number of years the stand is grown until harvest.  Then, $A+T_1$ is the age of the stand at the end of the first rotation. Assuming the first rotation is followed by an infinite number of rotations, write an expression for present discounted value of net timber revenues from an infinite number of rotations (including the first one).
+
+<span style="color: blue;">**See code :)**</span>
+
+```{r}
+npv_obj_func <- function(choice, a, b, c, p, A, discount) {
+  
+  Q=(exp(a-b/(A + choice)))
+  npv = (p*Q*exp(-discount*choice) + 60.13825 * exp(-discount * choice))
+  
+  return(-npv)
+}
+```
+
+
+### C.
+
+Using your formula in b, and assuming A=30, what is the optimal value of $T_1$? How does your answer change when A=40?  A=60.14?  A=90?  Make a table showing your results.
+
+<span style="color: blue;">**see table :)**</span>
+
+
+
+```{r}
+out_2c.1=nloptr(x0=10, 
+                opts=options,
+                eval_f = npv_obj_func,
+                lb=0,
+                a=13,
+                b=185,
+                c=1000,
+                p=1.78,
+                A=30,
+                discount=0.05)
+
+round(out_2c.1$solution, 3)
+```
+```{r}
+out_2c.2=nloptr(x0=10, 
+                opts=options,
+                eval_f = npv_obj_func,
+                lb=0,
+                a=13,
+                b=185,
+                c=1000,
+                p=1.78,
+                A=40,
+                discount=0.05)
+
+round(out_2c.2$solution, 3)
+```
+```{r}
+out_2c.3=nloptr(x0=10, 
+                opts=options,
+                eval_f = npv_obj_func,
+                lb=0,
+                a=13,
+                b=185,
+                c=1000,
+                p=1.78,
+                A=60.14,
+                discount=0.05)
+
+round(out_2c.3$solution, 3)
+```
+```{r}
+out_2c.4=nloptr(x0=10, 
+                opts=options,
+                eval_f = npv_obj_func,
+                lb=0,
+                a=13,
+                b=185,
+                c=1000,
+                p=1.78,
+                A=90,
+                discount=0.05)
+
+round(out_2c.4$solution, 3)
+```
+
+```{r}
+
+Age <- c(30, 40, 60.14, 90)
+
+Optimal_time_till_harvest <- c(30.779, 20.779, 0.639, 0)
+
+out_2c_table <- data.frame(Age, Optimal_time_till_harvest)
+
+kable(out_2c_table)
+```
+
+### D.
+
+What do you notice about $A+T_1$?  Explain.
+
+<span style="color: blue;">**The younger a tree is, the longer a manager would have to wait to harvest at the optimal rotation length for infinite rotations, which is 60.138. When tree age is 30 or 40, managers still have to wait 20-30 rotations till the tree stand reaces optimal rotation length. Once tree age reaches 60.14, we notice that the optimal time till harvest becomes very small. This is because we are so close to out optimal harvest length, that there is very little time to wait. When tree age is 90, the optimal time till harvest is 0 because we are already past the optimal harvest time. **</span>
+
+
+
+
+
