@@ -466,7 +466,7 @@ time.]</p>
 the final (year T) values of <span class="math inline">\(p_T\)</span>
 and <span class="math inline">\(R_T\)</span>? Why? Does the resource get
 more scarce over time? What is your evidence?</p>
-<p><span style="color: blue;"><strong>The final year T is 36, <span class="math inline">\(p_t\)</span>=40, and <span class="math inline">\(R_t\)</span>=0. The resource becomes more scarce
+<p><span style="color: blue;"><strong>The final year <span class="math inline">\(T\)</span> is 36, <span class="math inline">\(p_t\)</span>=40, and <span class="math inline">\(R_t\)</span>=0. The resource becomes more scarce
 over time because it is an exhaustible resource that will eventually be
 depleted. As we can see in the table, both quantity and reserves slowly
 deplete over time. If there are no quantities and reserves, profits will
@@ -1631,24 +1631,26 @@ three cases? Explain why they are different from part A.</p>
 <p><span style="color: blue;"><strong>The final year <span class="math inline">\(T\)</span> for the tree cases is 38, 41, and 30
 respectively. This is different from A because the parameters have been
 altered. In the first scenario, the marginal cost is 3.178025 and in A
-the marginal cost is 0, this resulted in T changing from 36 in A to 38.
-When the marginal cost is no longer 0, the price and profits for an
-exhaustible resource will increase, while the reserves decrease at a
-slower rate as compared to A, thus it takes a little longer to deplete
-the reserves.</strong></span></p>
+the marginal cost is 0, this resulted in <span class="math inline">\(T\)</span> changing from 36 in A to 38. When the
+marginal cost is no longer 0, the price increases, thus decreasing
+demand slightly. Since demand decreases a little bit, it takes the
+manager in this scenario a little longer to deplete their resources,
+thus a slightly longer <span class="math inline">\(T\)</span> value than
+in A.</strong></span></p>
 <p><span style="color: blue;"><strong>In the second scenario, when R0
 changes from 778.1259 to 948.2253, the price, quantity, and profits all
 decrease, but the reserves increased. Since we start with higher initial
-reserves, it takes longer to deplete the reserves, thus why
-T=41.</strong></span></p>
+reserves, it takes longer to deplete the reserves, thus why <span class="math inline">\(T\)</span>=41.</strong></span></p>
 <p><span style="color: blue;"> <strong>Finally, in the last scenario, b
 decreases from 1 to 0.75194. In this scenario, prices, quantities, and
-profits are the highest. This could be indicating inelastic demand due
-to the continued (and even higher demand) despite higher prices. Since
-producers are profit maximizers, they will continue to meet the demand
-with high prices in order to maximize profit. However, this results in a
-rapid depletion of the exhaustible resource, thus why this T is the
-shortest. </strong></span></p>
+profits are the highest. This decrease in elasticity (b) means that
+consumers are less responsive to price changes. Since producers are
+profit maximizers, they will increase prices since they know that
+consumers will continue to purchase it despite the increased prices.
+Since producers can now sell the resources for more money, they will
+produce more to maximize their profit. Thus, why this scenario has the
+shortest <span class="math inline">\(T\)</span> value. Producers quickly
+deplete the resource in pursuit of maximum profits.</strong></span></p>
 </div>
 <div id="d." class="section level3">
 <h3>D.</h3>
@@ -1672,10 +1674,10 @@ in Scenario A.</strong></span></p>
 <p><span style="color: blue;"><strong>Finally, in the scenario where b
 is lowered, the price path is the steepest as a result of managers
 wanting to maximize their profit as much as possible. As explained
-before, this is why it has the shortest T value. Buyers are not
-sensitive to the increased price and continue to buy, while producers
-continue to produce to meet demand, leading to a steeper price path
-indicating early depletion. </strong></span></p>
+before, this is why it has the shortest <span class="math inline">\(T\)</span> value. Buyers are not sensitive to the
+increased price and continue to buy, while producers continue to produce
+to meet demand, leading to a steeper price path indicating early
+depletion. </strong></span></p>
 <pre class="r"><code>price_plot &lt;- ggplot() + 
   geom_line(data=exhaust_a_df, aes(x=time, y=price, color=&quot;Scenario A&quot;), show.legend = TRUE) +
   geom_line(data=exhaust_b.1_df, aes(x=time, y=price, color=&quot;Scenario where c=3.178025&quot;), show.legend = TRUE) +
@@ -1707,13 +1709,14 @@ decline much quicker than they have been earning. In addition, since
 this is an exhaustible resource, managers will continue to extract until
 there is none left, thus why each curve ends at 0.</strong></p>
 <p><span style="color: blue;"><strong>In Scenario A, profits steadily
-increase before declining around <span class="math inline">\(T_22\)</span>. The same happens for the scenario
-where the cost of extraction is 3.178025. The difference between these
-two is that when there is a cost of extraction, the present discounted
-value of profits begin higher because of the increase in price to
-account for the cost of extraction. In addition, this curve is more
-stretched out because T=38, meaning that the present discounted value of
-profits is more spread out across time. </strong></span></p>
+increase before declining around $T$22. The same happens for the
+scenario where the cost of extraction is 3.178025. The difference
+between these two is that when there is a cost of extraction, the
+present discounted value of profits begin higher because of the increase
+in price to account for the cost of extraction. In addition, this curve
+is more stretched out because <span class="math inline">\(T\)</span>=38,
+meaning that the present discounted value of profits is more spread out
+across time. </strong></span></p>
 <p><span style="color: blue;"><strong>In the scenario where R0 is
 higher, the profits start out lower because of the lower price compared
 to scenario A, despite both not having a cost of extraction. However,

@@ -3,9 +3,9 @@ title: "HW 4"
 author: "Andrew Plantinga"
 date: "2023-10-31"
 output:
-  pdf_document: default
   html_document:
     code_folding: hide
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -28,7 +28,7 @@ Suppose there is an exhaustible resource that is costlessly extracted.  The inve
 
 List the values of $t$, $p_t$, $q_t$, $R_t$, and  $\pi_t$ in a table below.  What should be the final (year T) values of $p_T$ and $R_T$? Why?  Does the resource get more scarce over time?  What is your evidence?
 
-<span style="color: blue;">**The final year T is 36, $p_t$=40, and $R_t$=0. The resource becomes more scarce over time because it is an exhaustible resource that will eventually be depleted. As we can see in the table, both quantity and reserves slowly deplete over time. If there are no quantities and reserves, profits will also be 0. **</span>
+<span style="color: blue;">**The final year $T$ is 36, $p_t$=40, and $R_t$=0. The resource becomes more scarce over time because it is an exhaustible resource that will eventually be depleted. As we can see in the table, both quantity and reserves slowly deplete over time. If there are no quantities and reserves, profits will also be 0. **</span>
 
 ```{r}
 exhaust_func <- function(a, b, c, delta, R0, T) {
@@ -107,11 +107,11 @@ kable(exhaust_b.3_df)
 
 What is the final year $T$ for the three cases? Explain why they are different from part A.
 
-<span style="color: blue;">**The final year $T$ for the tree cases is 38, 41, and 30 respectively. This is different from A because the parameters have been altered. In the first scenario, the marginal cost is 3.178025 and in A the marginal cost is 0, this resulted in T changing from 36 in A to 38. When the marginal cost is no longer 0, the price and profits for an exhaustible resource will increase, while the reserves decrease at a slower rate as compared to A, thus it takes a little longer to deplete the reserves.**</span>
+<span style="color: blue;">**The final year $T$ for the tree cases is 38, 41, and 30 respectively. This is different from A because the parameters have been altered. In the first scenario, the marginal cost is 3.178025 and in A the marginal cost is 0, this resulted in $T$ changing from 36 in A to 38. When the marginal cost is no longer 0, the price increases, thus decreasing demand slightly. Since demand decreases a little bit, it takes the manager in this scenario a little longer to deplete their resources, thus a slightly longer $T$ value than in A.**</span>
 
-<span style="color: blue;">**In the second scenario, when R0 changes from 778.1259 to 948.2253, the price, quantity, and profits all decrease, but the reserves increased. Since we start with higher initial reserves, it takes longer to deplete the reserves, thus why T=41.**</span>
+<span style="color: blue;">**In the second scenario, when R0 changes from 778.1259 to 948.2253, the price, quantity, and profits all decrease, but the reserves increased. Since we start with higher initial reserves, it takes longer to deplete the reserves, thus why $T$=41.**</span>
 
-<span style="color: blue;"> **Finally, in the last scenario, b decreases from 1 to 0.75194. In this scenario, prices, quantities, and profits are the highest. This could be indicating inelastic demand due to the continued (and even higher demand) despite higher prices. Since producers are profit maximizers, they will continue to meet the demand with high prices in order to maximize profit. However, this results in a rapid depletion of the exhaustible resource, thus why this T is the shortest. **</span>
+<span style="color: blue;"> **Finally, in the last scenario, b decreases from 1 to 0.75194. In this scenario, prices, quantities, and profits are the highest. This decrease in elasticity (b) means that consumers are less responsive to price changes. Since producers are profit maximizers, they will increase prices since they know that consumers will continue to purchase it despite the increased prices. Since producers can now sell the resources for more money, they will produce more to maximize their profit. Thus, why this scenario has the shortest $T$ value. Producers quickly deplete the resource in pursuit of maximum profits.**</span>
 
 
 ### D. 
@@ -124,7 +124,7 @@ Compare the path of prices in the three cases to that in part A. Explain the dif
 
 <span style="color: blue;">**In the third scenario where this is no cost of extraction, but a higher initial resource, the price curve is the lowest at T0. Since there is such a large amount of initial reserves, the manager can price it lower and have a larger quantity than in Scenario A.**</span>
 
-<span style="color: blue;">**Finally, in the scenario where b is lowered, the price path is the steepest as a result of managers wanting to maximize their profit as much as possible. As explained before, this is why it has the shortest T value. Buyers are not sensitive to the increased price and continue to buy, while producers continue to produce to meet demand, leading to a steeper price path indicating early depletion. **</span>
+<span style="color: blue;">**Finally, in the scenario where b is lowered, the price path is the steepest as a result of managers wanting to maximize their profit as much as possible. As explained before, this is why it has the shortest $T$ value. Buyers are not sensitive to the increased price and continue to buy, while producers continue to produce to meet demand, leading to a steeper price path indicating early depletion. **</span>
 
 
 ```{r}
@@ -146,7 +146,7 @@ What happens to the present discounted value of profits (in other words, the val
 
 <span style="color: blue;">**In all scenarios, the present discounted value of profits increase before declining as the reserves become depleted. All the scenarios start with some amount of profit because there are reserves of the exhaustible resource that can readily be extracted and sold. When the present value of discounted profits decline, this is typically much sharper than when they are increasing because the exhaustible resource is growing smaller and smaller with no recharge. Managers are stuck in a place of needing to make a profit, so they increase prices, and the combined effect of less buyers as a result of the increase of price AND declining reserves, their profits will decline much quicker than they have been earning. In addition, since this is an exhaustible resource, managers will continue to extract until there is none left, thus why each curve ends at 0.**
 
-<span style="color: blue;">**In Scenario A, profits steadily increase before declining around $T_22$. The same happens for the scenario where the cost of extraction is 3.178025. The difference between these two is that when there is a cost of extraction, the present discounted value of profits begin higher because of the increase in price to account for the cost of extraction. In addition, this curve is more stretched out because T=38, meaning that the present discounted value of profits is more spread out across time. **</span>
+<span style="color: blue;">**In Scenario A, profits steadily increase before declining around $T$22. The same happens for the scenario where the cost of extraction is 3.178025. The difference between these two is that when there is a cost of extraction, the present discounted value of profits begin higher because of the increase in price to account for the cost of extraction. In addition, this curve is more stretched out because $T$=38, meaning that the present discounted value of profits is more spread out across time. **</span>
 
 <span style="color: blue;">**In the scenario where R0 is higher, the profits start out lower because of the lower price compared to scenario A, despite both not having a cost of extraction. However, because of the larger initial reserves, this scenario's present discounted value of profits increases for a longer time than A simply because it has more initial reserves to begin with. As stated previously, the larger amount of initial reserves allows this scenario to have the longest time series before depletion.**</span>
 
