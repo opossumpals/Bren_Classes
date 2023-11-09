@@ -143,11 +143,13 @@ price_plot
 
 What happens to the present discounted value of profits (in other words, the value of the reserves $R_0$) in the three cases compared to part A? Explain the differences.
 
-<span style="color: blue;">**Solution**</span>
+<span style="color: blue;">**In all scenarios, the present discounted value of profits increase before declining as the reserves become depleted. All the scenarios start with some amount of profit because there are reserves of the exhaustible resource that can readily be extracted and sold. When the present value of discounted profits decline, this is typically much sharper than when they are increasing because the exhaustible resource is growing smaller and smaller with no recharge. Managers are stuck in a place of needing to make a profit, so they increase prices, and the combined effect of less buyers as a result of the increase of price AND declining reserves, their profits will decline much quicker than they have been earning. In addition, since this is an exhaustible resource, managers will continue to extract until there is none left, thus why each curve ends at 0.**
 
-<span style="color: blue;">
+<span style="color: blue;">**In Scenario A, profits steadily increase before declining around $T_22$. The same happens for the scenario where the cost of extraction is 3.178025. The difference between these two is that when there is a cost of extraction, the present discounted value of profits begin higher because of the increase in price to account for the cost of extraction. In addition, this curve is more stretched out because T=38, meaning that the present discounted value of profits is more spread out across time. **</span>
 
-</span>
+<span style="color: blue;">**In the scenario where R0 is higher, the profits start out lower because of the lower price compared to scenario A, despite both not having a cost of extraction. However, because of the larger initial reserves, this scenario's present discounted value of profits increases for a longer time than A simply because it has more initial reserves to begin with. As stated previously, the larger amount of initial reserves allows this scenario to have the longest time series before depletion.**</span>
+
+<span style="color: blue;">**Finally, the scenario where b is lowered has the most dramatic increase and decline in present discounted value of profits. This is due to a rapid depletion of resources in a scenario where demand is high and inelastic.**</span>
 
 ```{r}
 profits_plot <- ggplot() + 
