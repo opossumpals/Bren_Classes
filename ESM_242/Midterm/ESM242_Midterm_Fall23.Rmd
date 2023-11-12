@@ -1,0 +1,202 @@
+---
+title: "ESM 242 Midterm Exam"
+author: "This exam is due by 11:59 pm on Wednesday, November 15.  You may use class notes and previous homeworks to do this exam, but you may not discuss the exam with anybody.  Please contact me if you have any questions."
+output: 
+  html_document:
+    code_folding: hide
+date: '2023-11-08'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(nloptr)
+library(knitr)
+```
+
+
+
+
+
+
+
+
+## Question 1: Stand Externalities {.tabset}
+
+This problem considers spatial interactions between two stands.  Suppose that the management of stand 1 affects the growth of stand 2.  This is a classic case of an externality. Depending on the specific setting, this could be a negative or positive externality whereby stand 1 reduces or increases the growth of stand 2.  I ask you to consider how the externality affects the solution to the optimal rotation length for stand 2 and to think about how policies could be designed to remedy the problem.
+
+Suppose the yield functions for stand 1 and 2 are, respectively, $Q(T_1)=e^{a-b/T_1}$  and $Q(T_2,T_1^* )=e^{(a-b/T_2+dT_1^*} )$. The yield for stand 1 is the usual specification, but for stand 2, the yield depends on the age of the stand as well as the rotation length chosen for the first stand ($T_1^*$ ).  Note that the yield function for stand 2 depends on the rotation length $T_1^*$  and not on the current age of the stand $T_1$ .  While the latter formulation is more realistic, it is much harder to implement in this problem.  Define a=10, b=90, c=125, p=2.5, and $\delta$=0.03.
+
+### A.
+
+Using NLoptR and the parameter values given above, what is the optimal rotation length for stand 1 ( $T_1^*$) when the stand is grown for an infinite number of rotations?
+
+<span style="color: blue;">**The optimal rotation length for stand 1 when grown for an infinite number of rotations is 48.258 rotations.**</span>
+
+
+
+```{r}
+inf_rotation_s1_func <- function(choice, a, b, c, p, discount) {
+  
+  state <- vector(mode="numeric", length=0)
+  benefits <- vector(mode="numeric", length=0)
+  
+  Q=exp(a-b/choice[1])
+  benefits=(p*Q*exp(-discount*choice)-c)/(1-exp(-discount*choice))
+  
+  return(-benefits)
+  
+}
+
+
+options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15,maxeval=16000)
+
+out_1a <- nloptr(x0=10, 
+                 eval_f=inf_rotation_s1_func,
+                 opts=options,
+                 a=10, 
+                 b=90, 
+                 c=125,
+                 p=2.5,
+                 discount=0.03)
+
+solution_1a <- round(out_1a$solution, 3)
+
+```
+
+
+
+
+### B.
+
+Holding the rotation for stand 1 at the value of $T_1^*$  found in a, what are the optimal rotations (assume an infinite number of them) for stand 2 ($T_2^*$) for three different values of d: d=0, d=-0.03, d=0.1?  Explain the relationship between $T_2^*$ and $d$.
+
+<span style="color: blue;">**Solution**.</span>
+
+
+
+```{r}
+inf_rotation_s2_func <- function(choice, solution, a, b, c, p, discount) {
+  
+  state <- vector(mode="numeric", length=0)
+  benefits <- vector(mode="numeric", length=0)
+  
+  Q=exp(a-b)/(choice+discount*solution)
+  benefits=(p*Q*exp(-discount*choice)-c)/(1-exp(-discount*choice))
+  
+  #(choice in choice_s2) {
+   # Q_s2 = exp(a - b / choice_s2)
+  #  benefits_s2 = (p * Q_s2 * exp(-discount * choice_s2) - c) / (1 - exp(-discount * choice_s2))
+  #}
+  
+  return(-benefits)
+  
+}
+
+out_1b <- nloptr(x0=10, 
+                 eval_f=inf_rotation_s2_func,
+                 opts=options,
+                 a=10, 
+                 b=90, 
+                 c=125,
+                 p=2.5,
+                 solution=48.258,
+                 discount=0.1)
+
+round(out_1b$solution, 3)
+```
+
+
+
+
+### C.
+
+What are some real-world examples of negative and positive externalities that affect the growth of neighboring stands?  Describe some policy interventions that could be used to get the owner of stand 1 to internalize the effect of her stand on stand 2.  In order words, how could policies be used to get the owner of stand 1 to reduce negative externalities or increase positive externalities?  
+
+<span style="color: blue;">**Solution**.</span>
+
+
+
+
+
+## Question 2: Stock Pollutant {.tabset}
+
+This question builds on the stock pollutant example presented in class. The objective is to maximize the present value of net benefits (PVNB) from production $q_t$ of a good: 
+
+$$
+PVNB= \max_q \sum^{t=10}_{t=0}\rho^t(pq_t-(aZ_t-bZ_t^2))
+$$
+where $(aZ_t-bZ_t^2)$ are the damages from the stock pollution $Z_t$.  The maximization problem is subject to $Z_{t+1}=Z_t(1-\gamma)+\alpha*q_t$ and $Z_0$ given. Use the following parameter values: $\rho=\frac{1}{1.04}$, p=100, a= 2, b=-0.25,$\gamma=0.2$, $\alpha=2$, and $Z_0$=40. In addition, I want you to ensure that the pollution stock in the last period ($Z_{10}$) is equal to 25. You can think of $Z_{10}$ as a stabilization target, which mimics the goals of the Paris Agreement ( https://unfccc.int/process-and-meetings/the-paris-agreement/the-paris-agreement).  To implement $Z_{10}=25$, you will need a constraint just like the one we used to ensure that $q_t \leq R_t$ (HW 1) and $Y_t \leq X_t$ (HW 2).  However, in this case you only need to constrain the final ($t=10$) value.  An equality constraint requires different options than the inequality constraint.  I provide these for you below.  In your nloptr command, you will need to call the constraint with eval_g_eq=name_of_constraint. I also suggest including the lower bound constraint lb=rep(0,period) to ensure that extract is non-negative.    
+
+
+### A. 
+
+What is the optimal solution? Make a table reporting $t$, $q_t$, $Z_t$, and $\pi_t=\rho^t(pq_t-(aZ_t-bZ_t^2))$.
+
+<span style="color: blue;">**Solution**
+</span>
+
+
+
+```{r}
+
+
+
+
+  
+  
+ 
+
+
+
+#local_opts<-list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15)
+#options=list("algorithm"="NLOPT_LN_AUGLAG",xtol_rel=1e-15,maxeval=16000,"local_opts"=local_opts)
+
+#out_3a=nloptr(
+#              eval_g_eq= ,
+#              opts = options,
+              
+#              )
+
+
+
+
+```
+
+
+
+
+
+
+
+
+
+### B. 
+
+How does your answer to part a change when the price parameter p is raised to 150?  Explain why the optimal $q_t$ changes compared to part a.
+
+<span style="color: blue;">**Solution**
+</span>
+
+
+
+
+### C.
+
+Set the price back to 100. How does your answer to part a change when the stabilization target is lowered to $Z_{11} =10$?  Explain the change in $q_t$.  
+
+<span style="color: blue;">**Solution**
+</span>
+
+
+
+### D.
+
+Why do you think the pollution stock in period 5, $Z_5$, is virtually the same under the solutions in parts a and c?
+
+<span style="color: blue;">**Solution**
+</span>
+
