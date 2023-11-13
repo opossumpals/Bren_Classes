@@ -475,8 +475,34 @@ problem. Define a=10, b=90, c=125, p=2.5, and <span class="math inline">\(\delta
 <p>Using NLoptR and the parameter values given above, what is the
 optimal rotation length for stand 1 ( <span class="math inline">\(T_1^*\)</span>) when the stand is grown for an
 infinite number of rotations?</p>
-<p><span style="color: blue;"><strong>Solution</strong></span></p>
-<pre class="r"><code>#options=list(&quot;algorithm&quot;=&quot;NLOPT_LN_COBYLA&quot;,xtol_rel=1e-15,maxeval=16000)</code></pre>
+<p><span style="color: blue;"><strong>The optimal rotation length for
+stand 1 when grown for an infinite number of rotations is 48.258
+rotations.</strong></span></p>
+<pre class="r"><code>inf_rotation_s1_func &lt;- function(choice, a, b, c, p, discount) {
+  
+  state &lt;- vector(mode=&quot;numeric&quot;, length=0)
+  benefits &lt;- vector(mode=&quot;numeric&quot;, length=0)
+  
+  Q=exp(a-b/choice[1])
+  benefits=(p*Q*exp(-discount*choice)-c)/(1-exp(-discount*choice))
+  
+  return(-benefits)
+  
+}
+
+
+options=list(&quot;algorithm&quot;=&quot;NLOPT_LN_COBYLA&quot;,xtol_rel=1e-15,maxeval=16000)
+
+out_1a &lt;- nloptr(x0=10, 
+                 eval_f=inf_rotation_s1_func,
+                 opts=options,
+                 a=10, 
+                 b=90, 
+                 c=125,
+                 p=2.5,
+                 discount=0.03)
+
+solution_1a &lt;- round(out_1a$solution, 3)</code></pre>
 </div>
 <div id="b." class="section level3">
 <h3>B.</h3>
@@ -484,6 +510,35 @@ infinite number of rotations?</p>
 rotations (assume an infinite number of them) for stand 2 (<span class="math inline">\(T_2^*\)</span>) for three different values of d:
 d=0, d=-0.03, d=0.1? Explain the relationship between <span class="math inline">\(T_2^*\)</span> and <span class="math inline">\(d\)</span>.</p>
 <p><span style="color: blue;"><strong>Solution</strong>.</span></p>
+<pre class="r"><code>inf_rotation_s2_func &lt;- function(choice, solution, a, b, c, p, discount) {
+  
+  state &lt;- vector(mode=&quot;numeric&quot;, length=0)
+  benefits &lt;- vector(mode=&quot;numeric&quot;, length=0)
+  
+  Q=exp(a-b)/(choice+discount*solution)
+  benefits=(p*Q*exp(-discount*choice)-c)/(1-exp(-discount*choice))
+  
+  #(choice in choice_s2) {
+   # Q_s2 = exp(a - b / choice_s2)
+  #  benefits_s2 = (p * Q_s2 * exp(-discount * choice_s2) - c) / (1 - exp(-discount * choice_s2))
+  #}
+  
+  return(-benefits)
+  
+}
+
+out_1b &lt;- nloptr(x0=10, 
+                 eval_f=inf_rotation_s2_func,
+                 opts=options,
+                 a=10, 
+                 b=90, 
+                 c=125,
+                 p=2.5,
+                 solution=48.258,
+                 discount=0.1)
+
+round(out_1b$solution, 3)</code></pre>
+<pre><code>## [1] 380</code></pre>
 </div>
 <div id="c." class="section level3">
 <h3>C.</h3>
