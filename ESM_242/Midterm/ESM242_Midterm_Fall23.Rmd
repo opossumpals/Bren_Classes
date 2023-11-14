@@ -74,7 +74,7 @@ solution_1a <- round(out_1a$solution, 3)
 
 Holding the rotation for stand 1 at the value of $T_1^*$  found in a, what are the optimal rotations (assume an infinite number of them) for stand 2 ($T_2^*$) for three different values of d: d=0, d=-0.03, d=0.1?  Explain the relationship between $T_2^*$ and $d$.
 
-<span style="color: blue;">**Solution**.</span>
+<span style="color: blue;">**d is and externality, specifically the effect that stand 1 has on stand 2. **.</span>
 
 
 
@@ -86,11 +86,6 @@ inf_rotation_s2_func <- function(choice, solution_1a, a, b, c, d, p, discount) {
   
   Q=exp(a-b/(choice+(d*solution_1a)))
   benefits=(p*Q*exp(-discount*choice)-c)/(1-exp(-discount*choice))
-  
-  #(choice in choice_s2) {
-   # Q_s2 = exp(a - b / choice_s2)
-  #  benefits_s2 = (p * Q_s2 * exp(-discount * choice_s2) - c) / (1 - exp(-discount * choice_s2))
-  #}
   
   return(-benefits)
   
@@ -145,7 +140,7 @@ round(out_1b.c$solution, 3)
 
 What are some real-world examples of negative and positive externalities that affect the growth of neighboring stands?  Describe some policy interventions that could be used to get the owner of stand 1 to internalize the effect of her stand on stand 2.  In order words, how could policies be used to get the owner of stand 1 to reduce negative externalities or increase positive externalities?  
 
-<span style="color: blue;">**Solution**.</span>
+<span style="color: blue;">**An example of a positive externality that affects the growth of neighboring stands is the benefits of carbon sequestration. When the first stand is grown for a longer time series, it is able to sequester more carbon. This in turn affects the second tree stand... An example of a negative externality is ...**.</span>
 
 
 

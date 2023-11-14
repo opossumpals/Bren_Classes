@@ -483,7 +483,7 @@ rotations.</strong></span></p>
   state &lt;- vector(mode=&quot;numeric&quot;, length=0)
   benefits &lt;- vector(mode=&quot;numeric&quot;, length=0)
   
-  Q=exp(a-b/choice[1])
+  Q=exp(a-b/choice)
   benefits=(p*Q*exp(-discount*choice)-c)/(1-exp(-discount*choice))
   
   return(-benefits)
@@ -509,36 +509,59 @@ solution_1a &lt;- round(out_1a$solution, 3)</code></pre>
 <p>Holding the rotation for stand 1 at the value of <span class="math inline">\(T_1^*\)</span> found in a, what are the optimal
 rotations (assume an infinite number of them) for stand 2 (<span class="math inline">\(T_2^*\)</span>) for three different values of d:
 d=0, d=-0.03, d=0.1? Explain the relationship between <span class="math inline">\(T_2^*\)</span> and <span class="math inline">\(d\)</span>.</p>
-<p><span style="color: blue;"><strong>Solution</strong>.</span></p>
-<pre class="r"><code>inf_rotation_s2_func &lt;- function(choice, solution, a, b, c, p, discount) {
+<p><span style="color: blue;"><strong>d is and externality, specifically
+the effect that stand 1 has on stand 2. </strong>.</span></p>
+<pre class="r"><code>inf_rotation_s2_func &lt;- function(choice, solution_1a, a, b, c, d, p, discount) {
   
   state &lt;- vector(mode=&quot;numeric&quot;, length=0)
   benefits &lt;- vector(mode=&quot;numeric&quot;, length=0)
   
-  Q=exp(a-b)/(choice+discount*solution)
+  Q=exp(a-b/(choice+(d*solution_1a)))
   benefits=(p*Q*exp(-discount*choice)-c)/(1-exp(-discount*choice))
-  
-  #(choice in choice_s2) {
-   # Q_s2 = exp(a - b / choice_s2)
-  #  benefits_s2 = (p * Q_s2 * exp(-discount * choice_s2) - c) / (1 - exp(-discount * choice_s2))
-  #}
   
   return(-benefits)
   
 }
 
-out_1b &lt;- nloptr(x0=10, 
+out_1b.a &lt;- nloptr(x0=10, 
                  eval_f=inf_rotation_s2_func,
                  opts=options,
                  a=10, 
                  b=90, 
                  c=125,
+                 d=0,
+                 solution_1a=48.258,
                  p=2.5,
-                 solution=48.258,
-                 discount=0.1)
+                 discount=0.03)
 
-round(out_1b$solution, 3)</code></pre>
-<pre><code>## [1] 380</code></pre>
+round(out_1b.a$solution, 3)</code></pre>
+<pre><code>## [1] 48.258</code></pre>
+<pre class="r"><code>out_1b.b &lt;- nloptr(x0=10, 
+                 eval_f=inf_rotation_s2_func,
+                 opts=options,
+                 a=10, 
+                 b=90, 
+                 c=125,
+                 d=0.1,
+                 solution_1a=48.258,
+                 p=2.5,
+                 discount=0.03)
+
+round(out_1b.b$solution, 3)</code></pre>
+<pre><code>## [1] 41.859</code></pre>
+<pre class="r"><code>out_1b.c &lt;- nloptr(x0=10, 
+                 eval_f=inf_rotation_s2_func,
+                 opts=options,
+                 a=10, 
+                 b=90, 
+                 c=125,
+                 d=-0.03,
+                 solution_1a=48.258,
+                 p=2.5,
+                 discount=0.03)
+
+round(out_1b.c$solution, 3)</code></pre>
+<pre><code>## [1] 50.097</code></pre>
 </div>
 <div id="c." class="section level3">
 <h3>C.</h3>
@@ -548,7 +571,12 @@ some policy interventions that could be used to get the owner of stand 1
 to internalize the effect of her stand on stand 2. In order words, how
 could policies be used to get the owner of stand 1 to reduce negative
 externalities or increase positive externalities?</p>
-<p><span style="color: blue;"><strong>Solution</strong>.</span></p>
+<p><span style="color: blue;"><strong>An example of a positive
+externality that affects the growth of neighboring stands is the
+benefits of carbon sequestration. When the first stand is grown for a
+longer time series, it is able to sequester more carbon. This in turn
+affects the second tree stand… An example of a negative externality is
+…</strong>.</span></p>
 </div>
 </div>
 <div id="question-2-stock-pollutant" class="section level2 tabset">
