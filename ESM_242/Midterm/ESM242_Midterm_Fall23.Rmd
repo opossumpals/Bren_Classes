@@ -167,30 +167,102 @@ What is the optimal solution? Make a table reporting $t$, $q_t$, $Z_t$, and $\pi
 
 ```{r}
 
-
-
-
+stock_obj_func <- function(choice, z0, a, b, p, gamma, alpha, rho) {
   
+  state <- vector(mode="numeric", length=0)
+  benefits <- vector(mode="numeric", length=0)
   
+  state[1] = z0
+  t=seq(0, period)
+  benefits[1] = rho^t*(p*choice[1]- (a*state[1]-b*state[1]^2))
+  
+  for(i in 2:period) {
+    state[i] = state[i-1]*(1-gamma)+alpha*choice[i-1]
+    benefits[i] = rho^t*(p*choice[i]-(a*state[i]-b*state[i]^2))
+  }
+  
+  pv=rho^t*benefits
+  npv=sum(pv)
+  
+  return(-npv)
+  
+}
+
+
+stock_const_func <- function(choice, z0, a, b, p, gamma, alpha, rho) {
+  
+  state <- vector(mode="numeric", length=0)
+  const <- vector(mode="numeric", length=0)
+  
+  state[1] = z0
+  const[1] = 25
+  
+  for(i in 2:period) {
+    state[i]= state[i-1]*(1-gamma) + alpha*choice[i-1]
+    const[i] = 25
+  }
+  
+  return(const)
+}
  
+period=10 
+
+local_opts<-list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15)
+options_2=list("algorithm"="NLOPT_LN_AUGLAG",xtol_rel=1e-15,maxeval=16000,"local_opts"=local_opts)
 
 
+out_2a <- nloptr( 
+  x0=rep(0, times=period), 
+  eval_f=stock_obj_func,
+  eval_g_eq=stock_const_func,
+  opts=options_2,
+  lb=rep(0, times=period),
+  z0=40, 
+  a=2,
+  b=-0.25,
+  p=100, 
+  alpha=2, 
+  gamma=0.2,
+  rho=1/1.04
+  )
 
-#local_opts<-list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15)
-#options=list("algorithm"="NLOPT_LN_AUGLAG",xtol_rel=1e-15,maxeval=16000,"local_opts"=local_opts)
-
-#out_3a=nloptr(
-#              eval_g_eq= ,
-#              opts = options,
-              
-#              )
-
-
+round(out_2a$solution)
 
 
 ```
 
 
+```{r}
+stock_2a_table<-function(choice, z0=40, period=10, a=2, b=-0.25, p=100, alpha=2, gamma=0.2, rho=1/1.04){
+  
+  #storage vectors
+  state<-vector(mode="numeric",length=length(choice))
+  benefits<-vector(mode="numeric",length=length(choice))
+
+  #initial state and benefits
+  state[1]=z0
+  t=seq(from=0,period)
+  benefits[1]=rho^t*(p*choice[1]- (a*state[1]-b*state[1]^2))
+  
+  for(i in 2:(period)){
+  state[i] = state[i-1]*(1-gamma)+alpha*choice[i-1]
+    benefits[i] = rho^t*(p*choice[i]-(a*state[i]-b*state[i]^2))
+     
+  }
+  
+  pv=rho^t*benefits
+  npv=sum(pv)
+  
+  return(data.frame("period"=t, "npv"=npv, "stock"=state, "effort"=choice))
+
+}
+
+out_2a$solution[11]=NA
+
+tbl_out_2a=round(stock_2a_table(out_2a$solution), 3)
+
+kable(tbl_out_2a)
+```
 
 
 
