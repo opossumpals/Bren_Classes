@@ -44,7 +44,7 @@ inf_rotation_s1_func <- function(choice, a, b, c, p, discount) {
   state <- vector(mode="numeric", length=0)
   benefits <- vector(mode="numeric", length=0)
   
-  Q=exp(a-b/choice[1])
+  Q=exp(a-b/choice)
   benefits=(p*Q*exp(-discount*choice)-c)/(1-exp(-discount*choice))
   
   return(-benefits)
@@ -79,12 +79,12 @@ Holding the rotation for stand 1 at the value of $T_1^*$  found in a, what are t
 
 
 ```{r}
-inf_rotation_s2_func <- function(choice, solution, a, b, c, p, discount) {
+inf_rotation_s2_func <- function(choice, solution_1a, a, b, c, d, p, discount) {
   
   state <- vector(mode="numeric", length=0)
   benefits <- vector(mode="numeric", length=0)
   
-  Q=exp(a-b)/(choice+discount*solution)
+  Q=exp(a-b)/(d*48.258)
   benefits=(p*Q*exp(-discount*choice)-c)/(1-exp(-discount*choice))
   
   #(choice in choice_s2) {
@@ -102,9 +102,9 @@ out_1b <- nloptr(x0=10,
                  a=10, 
                  b=90, 
                  c=125,
+                 d=0,
                  p=2.5,
-                 solution=48.258,
-                 discount=0.1)
+                 discount=0.03)
 
 round(out_1b$solution, 3)
 ```
