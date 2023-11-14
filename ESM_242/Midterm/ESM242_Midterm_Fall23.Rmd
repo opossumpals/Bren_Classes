@@ -167,44 +167,63 @@ What is the optimal solution? Make a table reporting $t$, $q_t$, $Z_t$, and $\pi
 
 ```{r}
 
-stock_obj_func <- function(choice, z0, a, b, p, gamma, alpha, rho) {
+stock_obj_func <- function(choice, int_state, a, b, p, gamma, alpha, discount, final_state) {
   
   state <- vector(mode="numeric", length=0)
   benefits <- vector(mode="numeric", length=0)
   
-  state[1] = z0
-  t=seq(0, period)
-  benefits[1] = rho^t*(p*choice[1]- (a*state[1]-b*state[1]^2))
+  state[1] = int_state
+  benefits[1] = (p*choice[1]- (a*state[1]-b*state[1]^2))
   
   for(i in 2:period) {
     state[i] = state[i-1]*(1-gamma)+alpha*choice[i-1]
-    benefits[i] = rho^t*(p*choice[i]-(a*state[i]-b*state[i]^2))
+    benefits[i] = (p*choice[i]-(a*state[i]-b*state[i]^2)) #no discount^t because it is multiplied in pv
   }
   
-  pv=rho^t*benefits
+  period=10
+  
+  t=seq(from=0,length.out=length(benefits))
+  
+  pv=discount^t*benefits
+    
   npv=sum(pv)
   
   return(-npv)
-  
 }
 
+ 
+stock_const_func <- function(choice, int_state, a, b, p, gamma, alpha, discount, final_state) {
+  #need to calculate state for the last period 
+  #not constraining every time, just for the last state 
+  
+  state <- numeric(length = 10)
+  const <- numeric(length = 10)
+  
+  #state <- vector(mode="numeric", length=0)
+  #const <- vector(mode="numeric", length=0)
+  
+  # Set final state and constraint for t=10
+  
+  state[1] = int_state
+  
+ 
+  #const[10] = 
+  
+  
+   for(i in 2:period) {
+    state[i] = state[i-1]*(1-gamma)+alpha*choice[i-1]
+    #const[i] = state[11]-25 
+   }
+  
+  state[10] = state[11]-25
+  
+  #print(c("state", state))
+  #print(c("const", const))
 
-stock_const_func <- function(choice, z0, a, b, p, gamma, alpha, rho) {
-  
-  state <- vector(mode="numeric", length=0)
-  const <- vector(mode="numeric", length=0)
-  
-  state[1] = z0
-  const[1] = 25
-  
-  for(i in 2:period) {
-    state[i]= state[i-1]*(1-gamma) + alpha*choice[i-1]
-    const[i] = 25
-  }
-  
+  # Return the vector of constraints
   return(const)
 }
- 
+
 period=10 
 
 local_opts<-list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15)
@@ -212,46 +231,49 @@ options_2=list("algorithm"="NLOPT_LN_AUGLAG",xtol_rel=1e-15,maxeval=16000,"local
 
 
 out_2a <- nloptr( 
-  x0=rep(0, times=period), 
+  x0=rep(0.1, times=period), 
   eval_f=stock_obj_func,
   eval_g_eq=stock_const_func,
   opts=options_2,
-  lb=rep(0, times=period),
-  z0=40, 
+  lb=rep(0.1, times=period),
+  int_state=40, 
   a=2,
   b=-0.25,
   p=100, 
   alpha=2, 
   gamma=0.2,
-  rho=1/1.04
+  discount=1/1.04,
+  final_state=25
   )
 
-round(out_2a$solution)
-
+round(out_2a$solution,3)
 
 ```
 
 
 ```{r}
-stock_2a_table<-function(choice, z0=40, period=10, a=2, b=-0.25, p=100, alpha=2, gamma=0.2, rho=1/1.04){
+stock_2a_table<-function(choice, int_state=40, period=10, a=2, b=-0.25, p=100, alpha=2, gamma=0.2, discount=1/1.04, final_state=25){
   
   #storage vectors
   state<-vector(mode="numeric",length=length(choice))
   benefits<-vector(mode="numeric",length=length(choice))
 
   #initial state and benefits
-  state[1]=z0
+  state[1]= int_state
   t=seq(from=0,period)
-  benefits[1]=rho^t*(p*choice[1]- (a*state[1]-b*state[1]^2))
+  benefits[1]=(p*choice[1]- (a*state[1]-b*state[1]^2))
   
   for(i in 2:(period)){
   state[i] = state[i-1]*(1-gamma)+alpha*choice[i-1]
-    benefits[i] = rho^t*(p*choice[i]-(a*state[i]-b*state[i]^2))
+    benefits[i] = (p*choice[i]-(a*state[i]-b*state[i]^2))
      
   }
   
-  pv=rho^t*benefits
-  npv=sum(pv)
+  state[10]=final_state
+  
+  pv=discount^t*benefits
+    
+  npv=sum(-pv)
   
   return(data.frame("period"=t, "npv"=npv, "stock"=state, "effort"=choice))
 
