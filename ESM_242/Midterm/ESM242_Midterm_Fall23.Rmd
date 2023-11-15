@@ -244,6 +244,8 @@ out_2a <- nloptr(
 
 round(out_2a$solution,3)
 
+round(out_2a$objective, 3)
+
 ```
 
 
@@ -270,11 +272,13 @@ stock_2a_table<-function(choice, int_state=40, period=10, a=2, b=-0.25, p=100, a
   
   pv=discount^t*benefits
     
-  npv=sum(-pv)
+  npv=sum(pv)
   
   return(data.frame("period"=t, "npv"=npv, "stock"=state, "effort"=choice))
 
 }
+
+
 
 out_2a$solution[11]=NA
 
