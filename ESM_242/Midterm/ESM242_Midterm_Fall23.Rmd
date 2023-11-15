@@ -84,7 +84,7 @@ inf_rotation_s2_func <- function(choice, solution_1a, a, b, c, d, p, discount) {
   state <- vector(mode="numeric", length=0)
   benefits <- vector(mode="numeric", length=0)
   
-  Q=exp(a-b/(choice+(d*solution_1a)))
+   Q=exp(a-(b/choice) + (d*solution_1a))
   benefits=(p*Q*exp(-discount*choice)-c)/(1-exp(-discount*choice))
   
   return(-benefits)
@@ -172,12 +172,12 @@ stock_obj_func <- function(choice, int_state, a, b, p, gamma, alpha, discount, f
   state <- vector(mode="numeric", length=0)
   benefits <- vector(mode="numeric", length=0)
   
-  state[1] = int_state
-  benefits[1] = (p*choice[1]- (a*state[1]-b*state[1]^2))
+  state[1]=int_state
+  benefits[1]=(p*choice[1]- (a*state[1]-b*state[1]^2))
   
   for(i in 2:period) {
-    state[i] = state[i-1]*(1-gamma)+alpha*choice[i-1]
-    benefits[i] = (p*choice[i]-(a*state[i]-b*state[i]^2)) #no discount^t because it is multiplied in pv
+    state[i]=state[i-1]*(1-gamma)+alpha*choice[i-1]
+    benefits[i]=(p*choice[i]-(a*state[i]-b*state[i]^2)) #no discount^t because it is multiplied in pv
   }
   
   period=11
@@ -196,19 +196,18 @@ stock_const_func <- function(choice, int_state, a, b, p, gamma, alpha, discount,
   #need to calculate state for the last period 
   #not constraining every time, just for the last state 
   
-  state <- numeric(length = 11)
+  state <- vector(mode="numeric", length=0)
   
-  state[1] = int_state
-  
-  constraint <- state[12]-25
-  
+  state[1]=int_state
   
    for(i in 2:period) {
-    state[i] = state[i-1]*(1-gamma)+alpha*choice[i-1]
-    #const[i] = state[11]-25 
+    state[i]=state[i-1]*(1-gamma)+alpha*choice[i-1]
+    #constraint[i] = state[11]-25 
    }
   
-  return(0)
+  constraint=state[11]-25
+  
+  return(0) #no violation of constraints
 }
 
 period=11 
@@ -248,14 +247,14 @@ stock_2a_table<-function(choice, int_state=40, period=11, a=2, b=-0.25, p=100, a
   benefits<-vector(mode="numeric",length=length(choice))
 
   #initial state and benefits
-  state[1]= int_state
+  state[1]=int_state
   t=seq(from=0,period)
-  benefits[1]=(p*choice[1]- (a*state[1]-b*state[1]^2))
+  benefits[1]=(p*choice[1]-(a*state[1]-b*state[1]^2))
   
   for(i in 2:(period)){
     
-  state[i] = state[i-1]*(1-gamma)+alpha*choice[i-1]
-  benefits[i] = (p*choice[i]-(a*state[i]-b*state[i]^2))
+  state[i]=state[i-1]*(1-gamma)+alpha*choice[i-1]
+  benefits[i]=(p*choice[i]-(a*state[i]-b*state[i]^2))
      
   }
   
@@ -294,7 +293,7 @@ How does your answer to part a change when the price parameter p is raised to 15
 
 ### C.
 
-Set the price back to 100. How does your answer to part a change when the stabilization target is lowered to $Z_{11} =10$?  Explain the change in $q_t$.  
+Set the price back to 100. How does your answer to part a change when the stabilization target is lowered to $Z_{10} =10$?  Explain the change in $q_t$.  
 
 <span style="color: blue;">**Solution**
 </span>
