@@ -230,7 +230,7 @@ out_2a <- nloptr(
   eval_f=stock_obj_func,
   eval_g_eq=stock_const_func,
   opts=options_2,
-  lb=rep(0.1, times=period),
+  lb=rep(0, times=period),
   int_state=40, 
   a=2,
   b=-0.25,
@@ -277,7 +277,7 @@ stock_2a_table<-function(choice, int_state=40, period=11, a=2, b=-0.25, p=100, a
 
 
 
-out_2a$solution[12]=NA
+#out_2a$solution[12]=NA
 
 tbl_out_2a=round(stock_2a_table(out_2a$solution), 3)
 
