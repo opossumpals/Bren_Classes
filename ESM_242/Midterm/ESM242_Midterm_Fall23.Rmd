@@ -197,7 +197,6 @@ stock_const_func <- function(choice, int_state, a, b, p, gamma, alpha, discount,
   #not constraining every time, just for the last state 
   
   state <- numeric(length = 10)
-  const <- numeric(length = 10)
   
   #state <- vector(mode="numeric", length=0)
   #const <- vector(mode="numeric", length=0)
@@ -206,8 +205,7 @@ stock_const_func <- function(choice, int_state, a, b, p, gamma, alpha, discount,
   
   state[1] = int_state
   
- 
-  #const[10] = 
+  constraint <- state[11]-25
   
   
    for(i in 2:period) {
@@ -215,13 +213,11 @@ stock_const_func <- function(choice, int_state, a, b, p, gamma, alpha, discount,
     #const[i] = state[11]-25 
    }
   
-  state[10] = state[11]-25
-  
   #print(c("state", state))
   #print(c("const", const))
 
   # Return the vector of constraints
-  return(const)
+  return(0)
 }
 
 period=10 
@@ -264,8 +260,9 @@ stock_2a_table<-function(choice, int_state=40, period=10, a=2, b=-0.25, p=100, a
   benefits[1]=(p*choice[1]- (a*state[1]-b*state[1]^2))
   
   for(i in 2:(period)){
+    
   state[i] = state[i-1]*(1-gamma)+alpha*choice[i-1]
-    benefits[i] = (p*choice[i]-(a*state[i]-b*state[i]^2))
+  benefits[i] = (p*choice[i]-(a*state[i]-b*state[i]^2))
      
   }
   
