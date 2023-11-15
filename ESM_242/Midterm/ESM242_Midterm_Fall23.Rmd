@@ -180,7 +180,7 @@ stock_obj_func <- function(choice, int_state, a, b, p, gamma, alpha, discount, f
     benefits[i] = (p*choice[i]-(a*state[i]-b*state[i]^2)) #no discount^t because it is multiplied in pv
   }
   
-  period=10
+  period=11
   
   t=seq(from=0,length.out=length(benefits))
   
@@ -196,16 +196,11 @@ stock_const_func <- function(choice, int_state, a, b, p, gamma, alpha, discount,
   #need to calculate state for the last period 
   #not constraining every time, just for the last state 
   
-  state <- numeric(length = 10)
-  
-  #state <- vector(mode="numeric", length=0)
-  #const <- vector(mode="numeric", length=0)
-  
-  # Set final state and constraint for t=10
+  state <- numeric(length = 11)
   
   state[1] = int_state
   
-  constraint <- state[11]-25
+  constraint <- state[12]-25
   
   
    for(i in 2:period) {
@@ -213,14 +208,10 @@ stock_const_func <- function(choice, int_state, a, b, p, gamma, alpha, discount,
     #const[i] = state[11]-25 
    }
   
-  #print(c("state", state))
-  #print(c("const", const))
-
-  # Return the vector of constraints
   return(0)
 }
 
-period=10 
+period=11 
 
 local_opts<-list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15)
 options_2=list("algorithm"="NLOPT_LN_AUGLAG",xtol_rel=1e-15,maxeval=16000,"local_opts"=local_opts)
@@ -250,7 +241,7 @@ round(out_2a$objective, 3)
 
 
 ```{r}
-stock_2a_table<-function(choice, int_state=40, period=10, a=2, b=-0.25, p=100, alpha=2, gamma=0.2, discount=1/1.04, final_state=25){
+stock_2a_table<-function(choice, int_state=40, period=11, a=2, b=-0.25, p=100, alpha=2, gamma=0.2, discount=1/1.04, final_state=25){
   
   #storage vectors
   state<-vector(mode="numeric",length=length(choice))
@@ -268,19 +259,17 @@ stock_2a_table<-function(choice, int_state=40, period=10, a=2, b=-0.25, p=100, a
      
   }
   
-  state[10]=final_state
+  state[11]=final_state
   
   pv=discount^t*benefits
-    
-  npv=sum(pv)
-  
-  return(data.frame("period"=t, "npv"=npv, "stock"=state, "effort"=choice))
+
+  return(data.frame("period"=t, "pv"=pv, "stock"=state, "effort"=choice))
 
 }
 
 
 
-out_2a$solution[11]=NA
+out_2a$solution[12]=NA
 
 tbl_out_2a=round(stock_2a_table(out_2a$solution), 3)
 
