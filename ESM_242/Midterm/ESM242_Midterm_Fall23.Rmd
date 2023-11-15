@@ -74,7 +74,7 @@ solution_1a <- round(out_1a$solution, 3)
 
 Holding the rotation for stand 1 at the value of $T_1^*$  found in a, what are the optimal rotations (assume an infinite number of them) for stand 2 ($T_2^*$) for three different values of d: d=0, d=-0.03, d=0.1?  Explain the relationship between $T_2^*$ and $d$.
 
-<span style="color: blue;">**d is and externality, specifically the effect that stand 1 has on stand 2. **.</span>
+<span style="color: blue;">**d is an externality, specifically the effect that stand 1 has on stand 2. **.</span>
 
 
 
@@ -140,7 +140,7 @@ round(out_1b.c$solution, 3)
 
 What are some real-world examples of negative and positive externalities that affect the growth of neighboring stands?  Describe some policy interventions that could be used to get the owner of stand 1 to internalize the effect of her stand on stand 2.  In order words, how could policies be used to get the owner of stand 1 to reduce negative externalities or increase positive externalities?  
 
-<span style="color: blue;">**An example of a positive externality that affects the growth of neighboring stands is the benefits of carbon sequestration. When the first stand is grown for a longer time series, it is able to sequester more carbon. This in turn affects the second tree stand... An example of a negative externality is ...**.</span>
+<span style="color: blue;">**An example of a positive externality that affects the growth of neighboring stands is water filtration. If stand 2 is downstream from stand 1, the first stand plays an important role in filtering water in the water cycle and since stand 2 is downstream from stand 1, they have the benefits of cleaner water. An example of a negative externality is if there were a pest infestation that affected stand 1, with spillover effects affecting the yield of stand 2. Policy interventions that could allow the owner to internalize the positive externalities would be **.</span>
 
 
 
@@ -277,7 +277,7 @@ stock_2a_table<-function(choice, int_state=40, period=11, a=2, b=-0.25, p=100, a
 
 
 
-#out_2a$solution[12]=NA
+out_2a$solution[12]=NA
 
 tbl_out_2a=round(stock_2a_table(out_2a$solution), 3)
 
