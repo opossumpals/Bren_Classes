@@ -167,13 +167,13 @@ What is the optimal solution? Make a table reporting $t$, $q_t$, $Z_t$, and $\pi
 
 ```{r}
 
-stock_obj_func <- function(choice, int_state, a, b, p, gamma, alpha, discount, final_state) {
+stock_obj_func <- function(choice, int_state, a, b, p, gamma, alpha, discount) {
   
   state <- vector(mode="numeric", length=0)
   benefits <- vector(mode="numeric", length=0)
   
   state[1]=int_state
-  benefits[1]=(p*choice[1]- (a*state[1]-b*state[1]^2))
+  benefits[1]=(p*choice[1]-(a*state[1]-b*state[1]^2))
   
   for(i in 2:period) {
     state[i]=state[i-1]*(1-gamma)+alpha*choice[i-1]
@@ -192,22 +192,31 @@ stock_obj_func <- function(choice, int_state, a, b, p, gamma, alpha, discount, f
 }
 
  
-stock_const_func <- function(choice, int_state, a, b, p, gamma, alpha, discount, final_state) {
+stock_const_func <- function(choice, int_state, a, b, p, gamma, alpha, discount) {
   #need to calculate state for the last period 
   #not constraining every time, just for the last state 
   
   state <- vector(mode="numeric", length=0)
+  benefits <- vector(mode="numeric", length=0)
   
   state[1]=int_state
+  benefits[1]=(p*choice[1]-(a*state[1]-b*state[1]^2))
   
    for(i in 2:period) {
     state[i]=state[i-1]*(1-gamma)+alpha*choice[i-1]
+    benefits[i]=(p*choice[i]-(a*state[i]-b*state[i]^2))
     #constraint[i] = state[11]-25 
    }
   
   constraint=state[11]-25
+    
+  period=11
   
-  return(0) #no violation of constraints
+  t=seq(from=0,length.out=length(benefits))
+  
+  pv=discount^t*benefits
+
+  return(constraint) #no violation of constraints
 }
 
 period=11 
@@ -229,18 +238,17 @@ out_2a <- nloptr(
   alpha=2, 
   gamma=0.2,
   discount=1/1.04,
-  final_state=25
   )
 
 round(out_2a$solution,3)
 
-round(out_2a$objective, 3)
+round(-out_2a$objective, 3)
 
 ```
 
 
 ```{r}
-stock_2a_table<-function(choice, int_state=40, period=11, a=2, b=-0.25, p=100, alpha=2, gamma=0.2, discount=1/1.04, final_state=25){
+stock_2a_table<-function(choice, int_state=40, period=11, a=2, b=-0.25, p=100, alpha=2, gamma=0.2, discount=1/1.04){
   
   #storage vectors
   state<-vector(mode="numeric",length=length(choice))
@@ -248,7 +256,6 @@ stock_2a_table<-function(choice, int_state=40, period=11, a=2, b=-0.25, p=100, a
 
   #initial state and benefits
   state[1]=int_state
-  t=seq(from=0,period)
   benefits[1]=(p*choice[1]-(a*state[1]-b*state[1]^2))
   
   for(i in 2:(period)){
@@ -258,11 +265,13 @@ stock_2a_table<-function(choice, int_state=40, period=11, a=2, b=-0.25, p=100, a
      
   }
   
-  state[11]=final_state
+  t=seq(from=0,length.out=length(benefits))
+  
+  constraint=state[11]-25
   
   pv=discount^t*benefits
 
-  return(data.frame("period"=t, "pv"=pv, "stock"=state, "effort"=choice))
+  return(data.frame("Period"=t, "PVNB"=pv, "Stock pollutant"=state, "Production"=choice))
 
 }
 
