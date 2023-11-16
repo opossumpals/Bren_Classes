@@ -9,7 +9,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="This exam is due by 11:59 pm on Wednesday, November 15. You may use class notes and previous homeworks to do this exam, but you may not discuss the exam with anybody. Please contact me if you have any questions." />
+<meta name="author" content="Delores Chan" />
 
 <meta name="date" content="2023-11-08" />
 
@@ -439,10 +439,7 @@ display: none;
 
 
 <h1 class="title toc-ignore">ESM 242 Midterm Exam</h1>
-<h4 class="author">This exam is due by 11:59 pm on Wednesday, November
-15. You may use class notes and previous homeworks to do this exam, but
-you may not discuss the exam with anybody. Please contact me if you have
-any questions.</h4>
+<h4 class="author">Delores Chan</h4>
 <h4 class="date">2023-11-08</h4>
 
 </div>
@@ -509,7 +506,7 @@ solution_1a &lt;- round(out_1a$solution, 3)</code></pre>
 <p>Holding the rotation for stand 1 at the value of <span class="math inline">\(T_1^*\)</span> found in a, what are the optimal
 rotations (assume an infinite number of them) for stand 2 (<span class="math inline">\(T_2^*\)</span>) for three different values of d:
 d=0, d=-0.03, d=0.1? Explain the relationship between <span class="math inline">\(T_2^*\)</span> and <span class="math inline">\(d\)</span>.</p>
-<p><span style="color: blue;"><strong>d is and externality, specifically
+<p><span style="color: blue;"><strong>d is an externality, specifically
 the effect that stand 1 has on stand 2. </strong>.</span></p>
 <pre class="r"><code>inf_rotation_s2_func &lt;- function(choice, solution_1a, a, b, c, d, p, discount) {
   
@@ -572,11 +569,21 @@ to internalize the effect of her stand on stand 2. In order words, how
 could policies be used to get the owner of stand 1 to reduce negative
 externalities or increase positive externalities?</p>
 <p><span style="color: blue;"><strong>An example of a positive
-externality that affects the growth of neighboring stands is the
-benefits of carbon sequestration. When the first stand is grown for a
-longer time series, it is able to sequester more carbon. This in turn
-affects the second tree stand… An example of a negative externality is
-…</strong>.</span></p>
+externality that affects the growth of neighboring stands is through
+biodiversity. If stand 1 is managed in such a way that it provides ideal
+habitat for many species, it can be expected that through pollination
+and migration that the benefits from stand 1 could be extended to stand
+2. An example of a negative externality is if there were a pest
+infestation that affected stand 1, with spillover effects affecting the
+yield of stand 2. Policy interventions that could allow the owner to
+internalize the positive externalities would be subsidies or incentive
+based policies that reward the owner for good management practices. For
+example, if there were aid for owners to deal with pest outbreaks, they
+may be able to better manage pests and reduce the spillover effect onto
+other stands. Similarly, owners could be incentivezed to practice ideal
+management with considerations to biodiversity in order to create
+healthier and more biodiverse stands that have the potential to
+spillover to other nearby stands.</strong>.</span></p>
 </div>
 </div>
 <div id="question-2-stock-pollutant" class="section level2 tabset">
@@ -607,9 +614,10 @@ non-negative.</p>
 <div id="a.-1" class="section level3">
 <h3>A.</h3>
 <p>What is the optimal solution? Make a table reporting <span class="math inline">\(t\)</span>, <span class="math inline">\(q_t\)</span>, <span class="math inline">\(Z_t\)</span>, and <span class="math inline">\(\pi_t=\rho^t(pq_t-(aZ_t-bZ_t^2))\)</span>.</p>
-<p><span style="color: blue;"><strong>Solution</strong> </span></p>
-<pre class="r"><code>stock_obj_func &lt;- function(choice, int_state, a, b, p, gamma, alpha, discount, final_state) {
-  
+<pre class="r"><code>stock_obj_func &lt;- function(choice, int_state, a, b, p, gamma, alpha, discount) {
+
+  period=11
+    
   state &lt;- vector(mode=&quot;numeric&quot;, length=0)
   benefits &lt;- vector(mode=&quot;numeric&quot;, length=0)
   
@@ -621,9 +629,7 @@ non-negative.</p>
     benefits[i]=(p*choice[i]-(a*state[i]-b*state[i]^2)) #no discount^t because it is multiplied in pv
   }
   
-  period=11
-  
-  t=seq(from=0,length.out=length(benefits))
+  t=seq(from=0, period)
   
   pv=discount^t*benefits
     
@@ -633,51 +639,51 @@ non-negative.</p>
 }
 
  
-stock_const_func &lt;- function(choice, int_state, a, b, p, gamma, alpha, discount, final_state) {
-  #need to calculate state for the last period 
-  #not constraining every time, just for the last state 
+stock_const_func &lt;- function(choice, int_state, a, b, p, gamma, alpha, discount) {
+  # Need to calculate state for the last period 
+  # Not constraining every time, just for the last state 
   
-  state &lt;- vector(mode=&quot;numeric&quot;, length=0)
+  state &lt;- vector(mode = &quot;numeric&quot;, length = period)
   
-  state[1]=int_state
+  state[1] = int_state
   
-   for(i in 2:period) {
-    state[i]=state[i-1]*(1-gamma)+alpha*choice[i-1]
-    #constraint[i] = state[11]-25 
-   }
+  for (i in 2:period) {
+    state[i] = state[i-1] * (1 - gamma) + alpha * choice[i-1]
+  }
   
-  constraint=state[11]-25
+  # Constraint for choice[11]
+  constraint = state[11] - 25
   
-  return(0) #no violation of constraints
+  return(constraint)  # No violation of constraints
 }
-
-period=11 
 
 local_opts&lt;-list(&quot;algorithm&quot;=&quot;NLOPT_LN_COBYLA&quot;,xtol_rel=1e-15)
 options_2=list(&quot;algorithm&quot;=&quot;NLOPT_LN_AUGLAG&quot;,xtol_rel=1e-15,maxeval=16000,&quot;local_opts&quot;=local_opts)
 
+period=11
 
 out_2a &lt;- nloptr( 
   x0=rep(0.1, times=period), 
   eval_f=stock_obj_func,
   eval_g_eq=stock_const_func,
   opts=options_2,
-  lb=rep(0.1, times=period),
+  lb=rep(0, times=period),
+  ub=rep(50, times=period),
   int_state=40, 
   a=2,
   b=-0.25,
   p=100, 
   alpha=2, 
   gamma=0.2,
-  discount=1/1.04,
-  final_state=25
+  discount=1/1.04
   )
 
 round(out_2a$solution,3)</code></pre>
-<pre><code>##  [1] 0.100 0.624 1.168 1.607 1.795 2.100 2.492 2.776 3.263 3.780 4.591</code></pre>
-<pre class="r"><code>round(out_2a$objective, 3)</code></pre>
-<pre><code>## [1] 281.479</code></pre>
-<pre class="r"><code>stock_2a_table&lt;-function(choice, int_state=40, period=11, a=2, b=-0.25, p=100, alpha=2, gamma=0.2, discount=1/1.04, final_state=25){
+<pre><code>##  [1] 10.712  0.125  0.205  0.101  1.803  0.734  1.312  2.104  3.160  3.387
+## [11] 50.000</code></pre>
+<pre class="r"><code>round(-out_2a$objective, 3)</code></pre>
+<pre><code>## [1] 2701.048</code></pre>
+<pre class="r"><code>stock_2a_table&lt;-function(choice, int_state=40, period=11, a=2, b=-0.25, p=100, alpha=2, gamma=0.2, discount=1/1.04){
   
   #storage vectors
   state&lt;-vector(mode=&quot;numeric&quot;,length=length(choice))
@@ -685,7 +691,6 @@ round(out_2a$solution,3)</code></pre>
 
   #initial state and benefits
   state[1]=int_state
-  t=seq(from=0,period)
   benefits[1]=(p*choice[1]-(a*state[1]-b*state[1]^2))
   
   for(i in 2:(period)){
@@ -695,11 +700,13 @@ round(out_2a$solution,3)</code></pre>
      
   }
   
-  state[11]=final_state
+  t=seq(from=0,period)
+  
+  #constraint=state[11]-25
   
   pv=discount^t*benefits
 
-  return(data.frame(&quot;Period&quot;=t, &quot;PVNB&quot;=pv, &quot;stock pollutant&quot;=state, &quot;Production&quot;=choice))
+  return(data.frame(&quot;Period&quot;=t, &quot;PVNB&quot;=pv, &quot;Stock pollutant&quot;=state, &quot;Production&quot;=choice))
 
 }
 
@@ -715,76 +722,76 @@ kable(tbl_out_2a)</code></pre>
 <tr class="header">
 <th align="right">Period</th>
 <th align="right">PVNB</th>
-<th align="right">stock.pollutant</th>
+<th align="right">Stock.pollutant</th>
 <th align="right">Production</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td align="right">0</td>
-<td align="right">-470.000</td>
+<td align="right">591.157</td>
 <td align="right">40.000</td>
-<td align="right">0.100</td>
+<td align="right">10.712</td>
 </tr>
 <tr class="even">
 <td align="right">1</td>
-<td align="right">-251.177</td>
-<td align="right">32.200</td>
-<td align="right">0.624</td>
+<td align="right">-776.770</td>
+<td align="right">53.423</td>
+<td align="right">0.125</td>
 </tr>
 <tr class="odd">
 <td align="right">2</td>
-<td align="right">-110.513</td>
-<td align="right">27.008</td>
-<td align="right">1.168</td>
+<td align="right">-487.671</td>
+<td align="right">42.989</td>
+<td align="right">0.205</td>
 </tr>
 <tr class="even">
 <td align="right">3</td>
-<td align="right">-27.092</td>
-<td align="right">23.943</td>
-<td align="right">1.607</td>
+<td align="right">-322.083</td>
+<td align="right">34.801</td>
+<td align="right">0.101</td>
 </tr>
 <tr class="odd">
 <td align="right">4</td>
-<td align="right">8.238</td>
-<td align="right">22.369</td>
-<td align="right">1.795</td>
+<td align="right">-61.886</td>
+<td align="right">28.043</td>
+<td align="right">1.803</td>
 </tr>
 <tr class="even">
 <td align="right">5</td>
-<td align="right">42.406</td>
-<td align="right">21.484</td>
-<td align="right">2.100</td>
+<td align="right">-121.789</td>
+<td align="right">26.040</td>
+<td align="right">0.734</td>
 </tr>
 <tr class="odd">
 <td align="right">6</td>
-<td align="right">72.783</td>
-<td align="right">21.387</td>
-<td align="right">2.492</td>
+<td align="right">-29.841</td>
+<td align="right">22.301</td>
+<td align="right">1.312</td>
 </tr>
 <tr class="even">
 <td align="right">7</td>
-<td align="right">84.642</td>
-<td align="right">22.094</td>
-<td align="right">2.776</td>
+<td align="right">49.193</td>
+<td align="right">20.464</td>
+<td align="right">2.104</td>
 </tr>
 <tr class="odd">
 <td align="right">8</td>
-<td align="right">105.918</td>
-<td align="right">23.227</td>
-<td align="right">3.263</td>
+<td align="right">123.499</td>
+<td align="right">20.578</td>
+<td align="right">3.160</td>
 </tr>
 <tr class="even">
 <td align="right">9</td>
-<td align="right">119.575</td>
-<td align="right">25.107</td>
-<td align="right">3.780</td>
+<td align="right">114.749</td>
+<td align="right">22.783</td>
+<td align="right">3.387</td>
 </tr>
 <tr class="odd">
 <td align="right">10</td>
-<td align="right">143.741</td>
+<td align="right">3238.486</td>
 <td align="right">25.000</td>
-<td align="right">4.591</td>
+<td align="right">50.000</td>
 </tr>
 <tr class="even">
 <td align="right">11</td>
@@ -799,19 +806,343 @@ kable(tbl_out_2a)</code></pre>
 <h3>B.</h3>
 <p>How does your answer to part a change when the price parameter p is
 raised to 150? Explain why the optimal <span class="math inline">\(q_t\)</span> changes compared to part a.</p>
-<p><span style="color: blue;"><strong>Solution</strong> </span></p>
+<p><span style="color: blue;"><strong>The optimal <span class="math inline">\(q_t\)</span> decreases when price is raised to 150
+because producers will likely pollute less if it is more expensive to
+pollute. As such, firms will either produce less of the good to emit
+less or invest in technology to reduce their pollution from production.
+In part a, the optimal <span class="math inline">\(q_t\)</span> is
+higher because the price of production was lower. It cost producers less
+to pollute, so they are more willing to emit pollution than in a
+scenario where the cost of polluting is high. </strong> </span></p>
+<pre class="r"><code>out_2b &lt;- nloptr( 
+  x0=rep(0.1, times=period), 
+  eval_f=stock_obj_func,
+  eval_g_eq=stock_const_func,
+  opts=options_2,
+  lb=rep(0, times=period),
+  ub=rep(50, times=period),
+  int_state=40, 
+  a=2,
+  b=-0.25,
+  p=150, 
+  alpha=2, 
+  gamma=0.2,
+  discount=1/1.04
+  )
+
+round(out_2b$solution,3)</code></pre>
+<pre><code>##  [1] 26.098  0.098  0.189  0.391  0.652  2.584  3.807  3.459  0.781  0.631
+## [11] 50.000</code></pre>
+<pre class="r"><code>round(-out_2b$objective, 3)</code></pre>
+<pre><code>## [1] 6397.303</code></pre>
+<pre class="r"><code>stock_2b_table &lt;- function(choice, int_state=40, period=11, a=2, b=-0.25, p=150, alpha=2, gamma=0.2, discount=1/1.04){
+  
+  #storage vectors
+  state&lt;-vector(mode=&quot;numeric&quot;,length=length(choice))
+  benefits&lt;-vector(mode=&quot;numeric&quot;,length=length(choice))
+
+  #initial state and benefits
+  state[1]=int_state
+  benefits[1]=(p*choice[1]-(a*state[1]-b*state[1]^2))
+  
+  for(i in 2:(period)){
+    
+  state[i]=state[i-1]*(1-gamma)+alpha*choice[i-1]
+  benefits[i]=(p*choice[i]-(a*state[i]-b*state[i]^2))
+     
+  }
+  
+  t=seq(from=0,period)
+  
+  #constraint=state[11]-25
+  
+  pv=discount^t*benefits
+
+  return(data.frame(&quot;Period&quot;=t, &quot;PVNB&quot;=pv, &quot;Stock pollutant&quot;=state, &quot;Production&quot;=choice))
+
+}
+
+
+
+out_2b$solution[12]=NA
+
+tbl_out_2b=round(stock_2b_table(out_2b$solution), 3)
+
+kable(tbl_out_2b)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">Period</th>
+<th align="right">PVNB</th>
+<th align="right">Stock.pollutant</th>
+<th align="right">Production</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">0</td>
+<td align="right">3434.676</td>
+<td align="right">40.000</td>
+<td align="right">26.098</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">-1851.784</td>
+<td align="right">84.196</td>
+<td align="right">0.098</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="right">-1153.449</td>
+<td align="right">67.553</td>
+<td align="right">0.189</td>
+</tr>
+<tr class="even">
+<td align="right">3</td>
+<td align="right">-702.825</td>
+<td align="right">54.421</td>
+<td align="right">0.391</td>
+</tr>
+<tr class="odd">
+<td align="right">4</td>
+<td align="right">-411.942</td>
+<td align="right">44.320</td>
+<td align="right">0.652</td>
+</tr>
+<tr class="even">
+<td align="right">5</td>
+<td align="right">-19.456</td>
+<td align="right">36.759</td>
+<td align="right">2.584</td>
+</tr>
+<tr class="odd">
+<td align="right">6</td>
+<td align="right">160.467</td>
+<td align="right">34.576</td>
+<td align="right">3.807</td>
+</tr>
+<tr class="even">
+<td align="right">7</td>
+<td align="right">104.264</td>
+<td align="right">35.275</td>
+<td align="right">3.459</td>
+</tr>
+<tr class="odd">
+<td align="right">8</td>
+<td align="right">-191.260</td>
+<td align="right">35.138</td>
+<td align="right">0.781</td>
+</tr>
+<tr class="even">
+<td align="right">9</td>
+<td align="right">-129.884</td>
+<td align="right">29.673</td>
+<td align="right">0.631</td>
+</tr>
+<tr class="odd">
+<td align="right">10</td>
+<td align="right">4927.396</td>
+<td align="right">25.000</td>
+<td align="right">50.000</td>
+</tr>
+<tr class="even">
+<td align="right">11</td>
+<td align="right">0.000</td>
+<td align="right">0.000</td>
+<td align="right">NA</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="c.-1" class="section level3">
 <h3>C.</h3>
 <p>Set the price back to 100. How does your answer to part a change when
 the stabilization target is lowered to <span class="math inline">\(Z_{10} =10\)</span>? Explain the change in <span class="math inline">\(q_t\)</span>.</p>
-<p><span style="color: blue;"><strong>Solution</strong> </span></p>
+<p><span style="color: blue;"><strong>When <span class="math inline">\(Z_{10}=10\)</span>, this indicates a more
+stringent environmental goal. The <span class="math inline">\(q_t\)</span> in c is lower than in a because
+polluters need to meet stricter environmental goal, thus they produce
+less. Even though the production price is the same as in part a, the
+pollution standard constrains polluters to emitting less in order to
+reach some environmental goal. This can take the form of policies with
+incentive programs or research and development, where polluters are not
+necessarily fined for polluting more. Instead they are achieving
+stricter standards with the production price of 100 because they partake
+in incentive programs where they could be compensated for emitting less,
+thus a lower price compared to part b’s price of 150 which could
+indicate additional costs to emitting.</strong> </span></p>
+<pre class="r"><code>stock_2c_const_func &lt;- function(choice, int_state, a, b, p, gamma, alpha, discount) {
+  # Need to calculate state for the last period 
+  # Not constraining every time, just for the last state 
+  
+  state &lt;- vector(mode = &quot;numeric&quot;, length = period)
+  
+  state[1] = int_state
+  
+  for (i in 2:period) {
+    state[i] = state[i-1] * (1 - gamma) + alpha * choice[i-1]
+  }
+  
+  # Constraint for choice[11]
+  constraint = state[11] - 10
+  
+  return(constraint)  # No violation of constraints
+}
+
+out_2c &lt;- nloptr( 
+  x0=rep(0.1, times=period), 
+  eval_f=stock_obj_func,
+  eval_g_eq=stock_2c_const_func,
+  opts=options_2,
+  lb=rep(0, times=period),
+  ub=rep(50, times=period),
+  int_state=40, 
+  a=2,
+  b=-0.25,
+  p=100, 
+  alpha=2, 
+  gamma=0.2,
+  discount=1/1.04
+  )
+
+round(out_2c$solution,3)</code></pre>
+<pre><code>##  [1] 11.560  0.000  0.000  0.000  0.514  1.873  0.524  0.000  0.121  0.000
+## [11] 50.000</code></pre>
+<pre class="r"><code>round(-out_2c$objective, 3)</code></pre>
+<pre><code>## [1] 2286.301</code></pre>
+<pre class="r"><code>stock_2c_table &lt;- function(choice, int_state=40, period=11, a=2, b=-0.25, p=150, alpha=2, gamma=0.2, discount=1/1.04){
+  
+  #storage vectors
+  state&lt;-vector(mode=&quot;numeric&quot;,length=length(choice))
+  benefits&lt;-vector(mode=&quot;numeric&quot;,length=length(choice))
+
+  #initial state and benefits
+  state[1]=int_state
+  benefits[1]=(p*choice[1]-(a*state[1]-b*state[1]^2))
+  
+  for(i in 2:(period)){
+    
+  state[i]=state[i-1]*(1-gamma)+alpha*choice[i-1]
+  benefits[i]=(p*choice[i]-(a*state[i]-b*state[i]^2))
+     
+  }
+  
+  t=seq(from=0,length.out=length(benefits))
+  
+  #constraint=state[11]-25
+  
+  pv=discount^t*benefits
+
+  return(data.frame(&quot;Period&quot;=t, &quot;PVNB&quot;=pv, &quot;Stock pollutant&quot;=state, &quot;Production&quot;=choice))
+
+}
+
+
+out_2c$solution[12]=NA
+
+tbl_out_2c=round(stock_2c_table(out_2c$solution), 3)
+
+kable(tbl_out_2c)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">Period</th>
+<th align="right">PVNB</th>
+<th align="right">Stock.pollutant</th>
+<th align="right">Production</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">0</td>
+<td align="right">1254.028</td>
+<td align="right">40.000</td>
+<td align="right">11.560</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">-836.351</td>
+<td align="right">55.120</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="right">-530.985</td>
+<td align="right">44.096</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="right">3</td>
+<td align="right">-339.305</td>
+<td align="right">35.277</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="right">4</td>
+<td align="right">-152.552</td>
+<td align="right">28.222</td>
+<td align="right">0.514</td>
+</tr>
+<tr class="even">
+<td align="right">5</td>
+<td align="right">77.577</td>
+<td align="right">23.605</td>
+<td align="right">1.873</td>
+</tr>
+<tr class="odd">
+<td align="right">6</td>
+<td align="right">-74.813</td>
+<td align="right">22.629</td>
+<td align="right">0.524</td>
+</tr>
+<tr class="even">
+<td align="right">7</td>
+<td align="right">-98.791</td>
+<td align="right">19.152</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="right">8</td>
+<td align="right">-51.966</td>
+<td align="right">15.321</td>
+<td align="right">0.121</td>
+</tr>
+<tr class="even">
+<td align="right">9</td>
+<td align="right">-45.009</td>
+<td align="right">12.500</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="right">10</td>
+<td align="right">5036.331</td>
+<td align="right">10.000</td>
+<td align="right">50.000</td>
+</tr>
+<tr class="even">
+<td align="right">11</td>
+<td align="right">0.000</td>
+<td align="right">0.000</td>
+<td align="right">NA</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="d." class="section level3">
 <h3>D.</h3>
 <p>Why do you think the pollution stock in period 5, <span class="math inline">\(Z_5\)</span>, is virtually the same under the
 solutions in parts a and c?</p>
-<p><span style="color: blue;"><strong>Solution</strong> </span></p>
+<p><span style="color: blue;"><strong>In theory, if <span class="math inline">\(Z_5\)</span> was the same in both parts a and c,
+it would be because we are only constraining the final period, T10.
+Since we are only constraining T10, the rest of the time periods are
+operating without constraints, thus the stock is virtually the
+same.</strong> </span></p>
+</div>
+</div>
+<div id="note" class="section level2 tabset">
+<h2 class="tabset">Note</h2>
+<div id="section" class="section level3">
+<h3>:(</h3>
+<p>I know my numbers are wrong, I tried ;(</p>
 </div>
 </div>
 

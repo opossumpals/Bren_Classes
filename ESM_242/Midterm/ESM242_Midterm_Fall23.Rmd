@@ -1,6 +1,6 @@
 ---
 title: "ESM 242 Midterm Exam"
-author: "This exam is due by 11:59 pm on Wednesday, November 15.  You may use class notes and previous homeworks to do this exam, but you may not discuss the exam with anybody.  Please contact me if you have any questions."
+author: "Delores Chan"
 output: 
   html_document:
     code_folding: hide
@@ -275,7 +275,7 @@ kable(tbl_out_2a)
 
 How does your answer to part a change when the price parameter p is raised to 150?  Explain why the optimal $q_t$ changes compared to part a.
 
-<span style="color: blue;">**The optimal $q_t$ decreases when price is raised to 150 because producers will likely pollute less if it is more expensive to pollute. As such, firms will either emit less or invest in technology to reduce their pollution. In part a, the optimal $q_t$ is higher because the price of production was lower. It cost producers less to pollute, so they are more willing to emit pollution than in a scenario where the cost of polluting is high. **
+<span style="color: blue;">**The optimal $q_t$ decreases when price is raised to 150 because producers will likely pollute less if it is more expensive to pollute. As such, firms will either produce less of the good to emit less or invest in technology to reduce their pollution from production. In part a, the optimal $q_t$ is higher because the price of production was lower. It cost producers less to pollute, so they are more willing to emit pollution than in a scenario where the cost of polluting is high. **
 </span>
 
 ```{r}
@@ -341,7 +341,7 @@ kable(tbl_out_2b)
 
 Set the price back to 100. How does your answer to part a change when the stabilization target is lowered to $Z_{10} =10$?  Explain the change in $q_t$.  
 
-<span style="color: blue;">**When $Z_{10}=10$, this indicates a more stringent environmental goal. The $q_t$ in c is lower than in a because polluters need to meet stricter environmental goal, thus they produce less. Even though the polluting price is the same as in part a, the pollution standard constrains polluters to emitting less in order to reach some environmental goal. This can take the form of policies with incentive programs or research and development, where polluters are not necessarily fined for polluting more. Instead they are achieving stricter standards with the polluting price of 100 because they partake in incentive programs where they could be compensated for emitting less, thus a lower price compared to part b's price of 150 which could indicate additional costs to emitting.**
+<span style="color: blue;">**When $Z_{10}=10$, this indicates a more stringent environmental goal. The $q_t$ in c is lower than in a because polluters need to meet stricter environmental goal, thus they produce less. Even though the production price is the same as in part a, the pollution standard constrains polluters to emitting less in order to reach some environmental goal. This can take the form of policies with incentive programs or research and development, where polluters are not necessarily fined for polluting more. Instead they are achieving stricter standards with the production price of 100 because they partake in incentive programs where they could be compensated for emitting less, thus a lower price compared to part b's price of 150 which could indicate additional costs to emitting.**
 </span>
 
 ```{r}
@@ -426,3 +426,8 @@ Why do you think the pollution stock in period 5, $Z_5$, is virtually the same u
 <span style="color: blue;">**In theory, if $Z_5$ was the same in both parts a and c, it would be because we are only constraining the final period, T10. Since we are only constraining T10, the rest of the time periods are operating without constraints, thus the stock is virtually the same.**
 </span>
 
+
+## Note {.tabset}
+
+### :(
+I know my numbers are wrong, I tried ;(
