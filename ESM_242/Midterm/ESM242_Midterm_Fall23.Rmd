@@ -140,7 +140,7 @@ round(out_1b.c$solution, 3)
 
 What are some real-world examples of negative and positive externalities that affect the growth of neighboring stands?  Describe some policy interventions that could be used to get the owner of stand 1 to internalize the effect of her stand on stand 2.  In order words, how could policies be used to get the owner of stand 1 to reduce negative externalities or increase positive externalities?  
 
-<span style="color: blue;">**An example of a positive externality that affects the growth of neighboring stands is water filtration. If stand 2 is downstream from stand 1, the first stand plays an important role in filtering water in the water cycle and since stand 2 is downstream from stand 1, they have the benefits of cleaner water. An example of a negative externality is if there were a pest infestation that affected stand 1, with spillover effects affecting the yield of stand 2. Policy interventions that could allow the owner to internalize the positive externalities would be **.</span>
+<span style="color: blue;">**An example of a positive externality that affects the growth of neighboring stands is through biodiversity. If stand 1 is managed in such a way that it provides ideal habitat for many species, it can be expected that through pollination and migration that the benefits from stand 1 could be extended to stand 2. An example of a negative externality is if there were a pest infestation that affected stand 1, with spillover effects affecting the yield of stand 2. Policy interventions that could allow the owner to internalize the positive externalities would be subsidies or incentive based policies that reward the owner for good management practices. For example, if there were aid for owners to deal with pest outbreaks, they may be able to better manage pests and reduce the spillover effect onto other stands. Similarly, owners could be incentivezed to practice ideal management with considerations to biodiversity in order to create healthier and more biodiverse stands that have the potential to spillover to other nearby stands.**.</span>
 
 
 
@@ -168,21 +168,21 @@ What is the optimal solution? Make a table reporting $t$, $q_t$, $Z_t$, and $\pi
 ```{r}
 
 stock_obj_func <- function(choice, int_state, a, b, p, gamma, alpha, discount) {
-  
+
+  period=11
+    
   state <- vector(mode="numeric", length=0)
   benefits <- vector(mode="numeric", length=0)
   
   state[1]=int_state
   benefits[1]=(p*choice[1]-(a*state[1]-b*state[1]^2))
   
-  for(i in 2:period) {
+  for(i in 2:length(choice)) {
     state[i]=state[i-1]*(1-gamma)+alpha*choice[i-1]
     benefits[i]=(p*choice[i]-(a*state[i]-b*state[i]^2)) #no discount^t because it is multiplied in pv
   }
   
-  period=11
-  
-  t=seq(from=0,length.out=length(benefits))
+  t=seq(from=0, period)
   
   pv=discount^t*benefits
     
@@ -193,37 +193,27 @@ stock_obj_func <- function(choice, int_state, a, b, p, gamma, alpha, discount) {
 
  
 stock_const_func <- function(choice, int_state, a, b, p, gamma, alpha, discount) {
-  #need to calculate state for the last period 
-  #not constraining every time, just for the last state 
+  # Need to calculate state for the last period 
+  # Not constraining every time, just for the last state 
   
-  state <- vector(mode="numeric", length=0)
-  benefits <- vector(mode="numeric", length=0)
+  state <- vector(mode = "numeric", length = period)
   
-  state[1]=int_state
-  benefits[1]=(p*choice[1]-(a*state[1]-b*state[1]^2))
+  state[1] = int_state
   
-   for(i in 2:period) {
-    state[i]=state[i-1]*(1-gamma)+alpha*choice[i-1]
-    benefits[i]=(p*choice[i]-(a*state[i]-b*state[i]^2))
-    #constraint[i] = state[11]-25 
-   }
+  for (i in 2:length(choice)) {
+    state[i] = state[i-1] * (1 - gamma) + alpha * choice[i-1]
+  }
   
-  constraint=state[11]-25
-    
-  period=11
+  # Constraint for choice[11]
+  constraint = state[period] - 25
   
-  t=seq(from=0,length.out=length(benefits))
-  
-  pv=discount^t*benefits
-
-  return(constraint) #no violation of constraints
+  return(constraint)  # No violation of constraints
 }
-
-period=11 
 
 local_opts<-list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-15)
 options_2=list("algorithm"="NLOPT_LN_AUGLAG",xtol_rel=1e-15,maxeval=16000,"local_opts"=local_opts)
 
+period=11
 
 out_2a <- nloptr( 
   x0=rep(0.1, times=period), 
@@ -231,13 +221,14 @@ out_2a <- nloptr(
   eval_g_eq=stock_const_func,
   opts=options_2,
   lb=rep(0, times=period),
+  ub=rep(10, times=period),
   int_state=40, 
   a=2,
   b=-0.25,
   p=100, 
   alpha=2, 
   gamma=0.2,
-  discount=1/1.04,
+  discount=1/1.04
   )
 
 round(out_2a$solution,3)
@@ -297,6 +288,27 @@ How does your answer to part a change when the price parameter p is raised to 15
 <span style="color: blue;">**Solution**
 </span>
 
+```{r}
+out_2b <- nloptr( 
+  x0=rep(0.1, times=period), 
+  eval_f=stock_obj_func,
+  eval_g_eq=stock_const_func,
+  opts=options_2,
+  lb=rep(0, times=period),
+  ub=rep(10, times=period),
+  int_state=40, 
+  a=2,
+  b=-0.25,
+  p=150, 
+  alpha=2, 
+  gamma=0.2,
+  discount=1/1.04
+  )
+
+round(out_2b$solution,3)
+
+round(-out_2b$objective, 3)
+```
 
 
 
@@ -307,6 +319,27 @@ Set the price back to 100. How does your answer to part a change when the stabil
 <span style="color: blue;">**Solution**
 </span>
 
+```{r}
+out_2c <- nloptr( 
+  x0=rep(0.1, times=period), 
+  eval_f=stock_obj_func,
+  eval_g_eq=stock_const_func,
+  opts=options_2,
+  lb=rep(0, times=period),
+  ub=rep(10, times=period),
+  int_state=40, 
+  a=2,
+  b=-0.25,
+  p=100, 
+  alpha=2, 
+  gamma=0.2,
+  discount=1/1.04
+  )
+
+round(out_2c$solution,3)
+
+round(-out_2c$objective, 3)
+```
 
 
 ### D.
