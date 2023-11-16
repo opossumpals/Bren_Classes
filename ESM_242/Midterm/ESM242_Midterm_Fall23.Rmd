@@ -172,7 +172,7 @@ stock_obj_func <- function(choice, int_state, a, b, p, gamma, alpha, discount) {
   state[1]=int_state
   benefits[1]=(p*choice[1]-(a*state[1]-b*state[1]^2))
   
-  for(i in 2:length(choice)) {
+  for(i in 2:period) {
     state[i]=state[i-1]*(1-gamma)+alpha*choice[i-1]
     benefits[i]=(p*choice[i]-(a*state[i]-b*state[i]^2)) #no discount^t because it is multiplied in pv
   }
@@ -195,7 +195,7 @@ stock_const_func <- function(choice, int_state, a, b, p, gamma, alpha, discount)
   
   state[1] = int_state
   
-  for (i in 2:length(choice)) {
+  for (i in 2:period) {
     state[i] = state[i-1] * (1 - gamma) + alpha * choice[i-1]
   }
   
@@ -251,7 +251,7 @@ stock_2a_table<-function(choice, int_state=40, period=11, a=2, b=-0.25, p=100, a
      
   }
   
-  t=seq(from=0,length.out=length(benefits))
+  t=seq(from=0,period)
   
   #constraint=state[11]-25
   
@@ -271,16 +271,11 @@ kable(tbl_out_2a)
 ```
 
 
-
-
-
-
-
 ### B. 
 
 How does your answer to part a change when the price parameter p is raised to 150?  Explain why the optimal $q_t$ changes compared to part a.
 
-<span style="color: blue;">**The optimal $q_t$ decreases when price is raised to 150 because producers will likely pollute less if it is more expensive to pollute. As such, firms will either emit less or invest in technology to reduce their pollution. In part a, the optimal $q_t$ is higher because the price of production was lower. It cost producers less to pollute, so they are more willing to emit pollution than in a scenario where the cost of polluting is high.**
+<span style="color: blue;">**The optimal $q_t$ decreases when price is raised to 150 because producers will likely pollute less if it is more expensive to pollute. As such, firms will either emit less or invest in technology to reduce their pollution. In part a, the optimal $q_t$ is higher because the price of production was lower. It cost producers less to pollute, so they are more willing to emit pollution than in a scenario where the cost of polluting is high. **
 </span>
 
 ```{r}
@@ -290,7 +285,7 @@ out_2b <- nloptr(
   eval_g_eq=stock_const_func,
   opts=options_2,
   lb=rep(0, times=period),
-  ub=rep(10, times=period),
+  ub=rep(50, times=period),
   int_state=40, 
   a=2,
   b=-0.25,
@@ -321,7 +316,7 @@ stock_2b_table <- function(choice, int_state=40, period=11, a=2, b=-0.25, p=150,
      
   }
   
-  t=seq(from=0,length.out=length(benefits))
+  t=seq(from=0,period)
   
   #constraint=state[11]-25
   
@@ -346,7 +341,7 @@ kable(tbl_out_2b)
 
 Set the price back to 100. How does your answer to part a change when the stabilization target is lowered to $Z_{10} =10$?  Explain the change in $q_t$.  
 
-<span style="color: blue;">**Solution**
+<span style="color: blue;">**When $Z_{10}=10$, this indicates a more stringent environmental goal. The $q_t$ in c is lower than in a because polluters need to meet stricter environmental goal, thus they produce less. Even though the polluting price is the same as in part a, the pollution standard constrains polluters to emitting less in order to reach some environmental goal. This can take the form of policies with incentive programs or research and development, where polluters are not necessarily fined for polluting more. Instead they are achieving stricter standards with the polluting price of 100 because they partake in incentive programs where they could be compensated for emitting less, thus a lower price compared to part b's price of 150 which could indicate additional costs to emitting.**
 </span>
 
 ```{r}
@@ -358,7 +353,7 @@ stock_2c_const_func <- function(choice, int_state, a, b, p, gamma, alpha, discou
   
   state[1] = int_state
   
-  for (i in 2:length(choice)) {
+  for (i in 2:period) {
     state[i] = state[i-1] * (1 - gamma) + alpha * choice[i-1]
   }
   
@@ -374,7 +369,7 @@ out_2c <- nloptr(
   eval_g_eq=stock_2c_const_func,
   opts=options_2,
   lb=rep(0, times=period),
-  ub=rep(10, times=period),
+  ub=rep(50, times=period),
   int_state=40, 
   a=2,
   b=-0.25,
@@ -428,6 +423,6 @@ kable(tbl_out_2c)
 
 Why do you think the pollution stock in period 5, $Z_5$, is virtually the same under the solutions in parts a and c?
 
-<span style="color: blue;">**Solution**
+<span style="color: blue;">**In theory, if $Z_5$ was the same in both parts a and c, it would be because we are only constraining the final period, T10. Since we are only constraining T10, the rest of the time periods are operating without constraints, thus the stock is virtually the same.**
 </span>
 
