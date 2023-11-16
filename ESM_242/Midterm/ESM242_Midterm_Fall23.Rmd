@@ -160,11 +160,6 @@ where $(aZ_t-bZ_t^2)$ are the damages from the stock pollution $Z_t$.  The maxim
 
 What is the optimal solution? Make a table reporting $t$, $q_t$, $Z_t$, and $\pi_t=\rho^t(pq_t-(aZ_t-bZ_t^2))$.
 
-<span style="color: blue;">**Solution**
-</span>
-
-
-
 ```{r}
 
 stock_obj_func <- function(choice, int_state, a, b, p, gamma, alpha, discount) {
@@ -205,7 +200,7 @@ stock_const_func <- function(choice, int_state, a, b, p, gamma, alpha, discount)
   }
   
   # Constraint for choice[11]
-  constraint = state[period] - 25
+  constraint = state[11] - 25
   
   return(constraint)  # No violation of constraints
 }
@@ -221,7 +216,7 @@ out_2a <- nloptr(
   eval_g_eq=stock_const_func,
   opts=options_2,
   lb=rep(0, times=period),
-  ub=rep(10, times=period),
+  ub=rep(75, times=period),
   int_state=40, 
   a=2,
   b=-0.25,
@@ -258,7 +253,7 @@ stock_2a_table<-function(choice, int_state=40, period=11, a=2, b=-0.25, p=100, a
   
   t=seq(from=0,length.out=length(benefits))
   
-  constraint=state[11]-25
+  #constraint=state[11]-25
   
   pv=discount^t*benefits
 
@@ -285,7 +280,7 @@ kable(tbl_out_2a)
 
 How does your answer to part a change when the price parameter p is raised to 150?  Explain why the optimal $q_t$ changes compared to part a.
 
-<span style="color: blue;">**Solution**
+<span style="color: blue;">**The optimal $q_t$ changes because **
 </span>
 
 ```{r}
