@@ -43,7 +43,7 @@ library(knitr)
 # alpha = stored carbon released by harvest
   # Hemlock-sitka spruce = ???
   # Douglas fir = 0.716 (Hunter’s calculations with data from Andrew’s paper)
-  # Alder mape = ?????
+  # Alder mapel = ?????
 
 # C = replanting cost
   # $335 per acre
@@ -59,10 +59,10 @@ tree_rotation <- function(choice, a, b, c, alpha, scc, discount, p, rho, C) {
   state <- vector(mode="numeric", length=0)
   benefits <- vector(mode="numeric", length=0)
   
-  Q = exp(a-(b/T))
+  Q = exp(a-(b/choice))
   state[1] = choice[1]
   # benefits[1]=(p*Q*exp(-discount*state[1])-c) 
-  benefits[1] = (rho^T)*p*(Q)+(rho^t)*(c(t))*scc-(rho^t)*scc*alpha*(c(t))-C
+  benefits[1] = (rho^choice[1])*p*(Q)+(rho^t)*c[1]*scc-(rho^[1])*scc*alpha*c[1]-C
 }
 ```
 
