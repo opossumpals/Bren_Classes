@@ -54,54 +54,33 @@ library(knitr)
 
 ```{r}
 
-timber_vol_func <- function(p, a, b) {
-  
-  p*(exp(a-(b/choice)))
-  
-  return(choice)
-}
-
+#choice = Big T
+#baseline rotation length without constraint 
+#LA will buy offsets at x price for timbre managers to leave stand for x time longer 
 
 #objective function LFG 
 douglas_fir_obj <- function(choice, a, b, c, alpha, scc, p, rho, cost) {
   
-  state <- vector(mode="numeric", length=0)
-  benefits <- vector(mode="numeric", length=0)
+  Q = exp(a-(b/choice))
+  benefits = (rho^choice)*p*(Q)+(rho^c)*c*scc-(rho^c)*scc*alpha*c-cost
   
-  Q = exp(a-(b/choice[1]))
-  state[1] = choice[1]
-  # benefits[1]=(p*Q*exp(-discount*state[1])-c) 
-  benefits[1] = (rho^choice[1])*p*(Q)+(rho)*c[1]*scc-(rho)*scc*alpha*c[1]-cost
-  
-  for(i in 2:10) {
-    Q = exp(a-(b/choice[i]))
-    state[i] = choice[i]+state[i-1]
-    benefits[i] = (rho^choice[i])*p*(Q)+(rho)*c[i]*scc-(rho)*scc*alpha*c[i]-cost
-  }
-  
-  t=seq(from=0, time=10)
-  npv=sum(benefits)
-  return(-npv)
+  return(-benefits)
     
 }
 
 options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-8,maxeval=16000)
 ```
 
-```{r}
-test_timber_vol <- timber_vol_func(p=683.85, a=11.947, b=-104.93)
-print(test_timber_vol)
-```
 
 
 ```{r}
 douglas_fir_out <- nloptr(
-  x0=rep(5, 10), 
+  x0=17,
   opts=options, 
   eval_f=douglas_fir_obj,
-  lb=rep(0,10),
-  a=0.4823,
-  b=823,
+  lb=0,
+  a=11.95,
+  b=-104.93,
   c=46.46,
   rho=0.05,
   scc=185,
@@ -112,6 +91,6 @@ douglas_fir_out <- nloptr(
 
 round(douglas_fir_out$solution, 3)
 
-round(-douglas_fir_out$option, 3)
+#round(-douglas_fir_out$option, 3)
 ```
 
