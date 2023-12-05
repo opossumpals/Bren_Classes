@@ -1,0 +1,117 @@
+---
+title: "ESM242_GP"
+author: "Delores Chan"
+date: "2023-11-16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+library(tidyverse)
+library(nloptr)
+library(knitr)
+```
+
+```{r}
+# parameters
+
+# p*Q(T) = timber volume function 
+# p = price of selling timber 
+  # Hemlock-sitka spruce p = $533.33 per MBF (2022 avg)
+  # Douglas fir p = $683.58 per MBF (2022 avg)
+  # Alder maple = $345 per MBF (2022 avg) 
+# Q(T) = e^(a-(b/T))
+  # Hemlock-sitka spruce (softwood): a=0.4823, b=823, c=0.8561
+  # Douglas fir (softwood): ????
+  # Alder maple (hardwood, A11): a=0.6147, b=4746, c=0.6306
+
+# c(t) = carbon increment 
+
+# scc = social cost of carbon
+  # $51 per tons of CO2 (US government value)
+  # $185 per tons of CO2 (RFTF preferred mean value)
+
+# alpha = stored carbon released by harvest
+  # Hemlock-sitka spruce = ???
+  # Douglas fir = 0.716 (Hunter’s calculations with data from Andrew’s paper)
+  # Alder mapel = ?????
+
+# C = replanting cost
+  # $335 per acre
+
+# (rho^T)*p*Q(T)+sum (rho^t)*c(t)*scc-rho^t*scc*alpha*sum*c(t)-C
+```
+
+
+```{r}
+
+timber_vol_func <- function(p, a, b) {
+  
+  p*(exp(a-(b/choice)))
+  
+  return(choice)
+}
+
+
+#objective function LFG 
+douglas_fir_obj <- function(choice, a, b, c, alpha, scc, p, rho, cost) {
+  
+  state <- vector(mode="numeric", length=0)
+  benefits <- vector(mode="numeric", length=0)
+  
+  Q = exp(a-(b/choice[1]))
+  state[1] = choice[1]
+  # benefits[1]=(p*Q*exp(-discount*state[1])-c) 
+  benefits[1] = (rho^choice[1])*p*(Q)+(rho)*c[1]*scc-(rho)*scc*alpha*c[1]-cost
+  
+  for(i in 2:10) {
+    Q = exp(a-(b/choice[i]))
+    state[i] = choice[i]+state[i-1]
+    benefits[i] = (rho^choice[i])*p*(Q)+(rho)*c[i]*scc-(rho)*scc*alpha*c[i]-cost
+  }
+  
+  t=seq(from=0, time=10)
+  npv=sum(benefits)
+  return(-npv)
+    
+}
+
+options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-8,maxeval=16000)
+```
+
+```{r}
+test_timber_vol <- timber_vol_func(p=683.85, a=11.947, b=-104.93)
+print(test_timber_vol)
+```
+
+
+```{r}
+douglas_fir_out <- nloptr(
+  x0=rep(5, 10), 
+  opts=options, 
+  eval_f=douglas_fir_obj,
+  lb=rep(0,10),
+  a=0.4823,
+  b=823,
+  c=46.46,
+  rho=0.05,
+  scc=185,
+  cost=335,
+  p=683.58,
+  alpha=0.213
+)
+
+round(douglas_fir_out$solution, 3)
+
+round(-douglas_fir_out$option, 3)
+```
+
