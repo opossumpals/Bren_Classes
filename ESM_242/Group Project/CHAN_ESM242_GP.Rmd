@@ -53,16 +53,45 @@ library(knitr)
 
 
 ```{r}
+# no carbon benefit
+objective_baseline <- function(choice, a, b, c, p, delta)
+{
+  Q = exp(a - b / choice)
+  benefits = p * Q * exp(-delta * choice) - c
+  
+  return(-benefits)
+}
+
+options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-8,maxeval=16000)
+
+output_baseline = nloptr(x0 = 10,
+                         eval_f = objective_baseline,
+                         lb = 0,
+                         opts = options,
+                         a = 11.9466,
+                         b = 104.9291,
+                         c = 335,
+                         p = 683.50,
+                         delta = 0.05)
+print(output_baseline$solution)
+```
+
+
+
+```{r}
 
 #choice = Big T
-#baseline rotation length without constraint 
 #LA will buy offsets at x price for timbre managers to leave stand for x time longer 
 
-#objective function LFG 
-douglas_fir_obj <- function(choice, a, b, c, alpha, scc, p, rho, cost) {
+# carbon benefit
+douglas_fir_obj <- function(choice, a1, b1, a2, b2, c, alpha, scc, p, rho) {
   
-  Q = exp(a-(b/choice))
+  Q = exp(a1 - b1 / choice)
+  cost = exp(a2 - b2 / choice)
+  
   benefits = (rho^choice)*p*(Q)+(rho^c)*c*scc-(rho^c)*scc*alpha*c-cost
+  
+  #benefits = rho^choice * p * Q + 7403.06 - rho^choice * scc * alpha * cost - c
   
   return(-benefits)
     
@@ -71,26 +100,32 @@ douglas_fir_obj <- function(choice, a, b, c, alpha, scc, p, rho, cost) {
 options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-8,maxeval=16000)
 ```
 
-
-
 ```{r}
 douglas_fir_out <- nloptr(
-  x0=17,
-  opts=options, 
-  eval_f=douglas_fir_obj,
-  lb=0,
-  a=11.95,
-  b=-104.93,
-  c=46.46,
-  rho=0.05,
-  scc=185,
-  cost=335,
-  p=683.58,
-  alpha=0.213
-)
+      x0 = 10,
+      eval_f = douglas_fir_obj,
+      lb = 0,
+      opts = options,
+      a1 = 11.9466,
+      b1 = 104.9291,
+      a2 = 4.729,
+      b2 = 14.559,
+      c = 335,
+      p = 683.50,
+      rho = 1/1.05,
+      alpha = 0.21330949,
+      scc = 190)
+
 
 round(douglas_fir_out$solution, 3)
 
-#round(-douglas_fir_out$option, 3)
+```
+
+```{r}
+#different scc
+```
+
+```{r}
+#change discount rate 2% and 7%
 ```
 
