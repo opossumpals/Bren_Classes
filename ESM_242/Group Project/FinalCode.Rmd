@@ -1,0 +1,109 @@
+---
+title: "ESM242 - Optimization"
+author: "Hunter Smith"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r}
+# Setup
+
+rm(list = ls())
+setwd("/Users/hunte/Desktop/ESM 242")
+library(tidyverse)
+library(nloptr)
+library(knitr)
+```
+
+```{r}
+# Estimating Parameters
+# Q(T) Function
+
+volume <- read.csv("volume.csv")
+volume$ln_q <- log(volume$q)
+volume$inv_age <- 1 / volume$t
+
+mod_volume <- lm(ln_q ~ inv_age, data = volume)
+summary(mod_volume)
+
+# C(T) Function
+
+timber <- read.csv("timberdata.csv")
+timber$ln_c <- log(timber$total_carbon)
+timber$inv_age <- 1 / timber$t
+
+timber_na <- na.omit(timber)
+
+mod_carbon <- lm(ln_c ~ inv_age, data = timber)
+summary(mod_carbon)
+
+# Carbon Increment Value Function
+
+carbon <- read.csv("carbon.csv")
+carbon$inv_age <- 1 / carbon$t
+carbon$inv_age2 <- carbon$inv_age * carbon$inv_age
+
+mod_cinc <- lm(value ~ inv_age + inv_age2, data = carbon)
+summary(mod_cinc)
+```
+
+```{r}
+# Baseline Objective Function -- No Carbon Benefit
+
+objective_baseline <- function(choice, a, b, c, p, delta)
+{
+  Q = exp(a - b / choice)
+  benefits = p * Q * exp(-delta * choice) - c
+  
+  return(-benefits)
+}
+
+options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-8,maxeval=16000)
+
+output_baseline = nloptr(x0 = 10,
+                         eval_f = objective_baseline,
+                         lb = 0,
+                         opts = options,
+                         a = 11.9466,
+                         b = 104.9291,
+                         c = 335,
+                         p = 8.20,
+                         delta = 0.05)
+print(output_baseline$solution)
+```
+
+```{r}
+# Objective Function Including Carbon Benefit
+
+objective_carbon <- function(choice, a1, b1, a2, b2, c, p, rho, alpha, scc)
+{
+  Q = exp(a1 - b1 / choice)
+  C = exp(a2 - b2 / choice)
+  C_inc = -119.228 + 5812.629 * (1 / choice) - 11910.266 * (1 / choice^2)
+
+  benefits = rho^choice * p * Q + C_inc - rho^choice * scc * alpha * C - c
+  
+  return(-benefits)
+}
+
+options=list("algorithm"="NLOPT_LN_COBYLA",xtol_rel=1e-8,maxeval=16000)
+
+output_carbon = nloptr(x0 = 10,
+                       eval_f = objective_carbon,
+                       lb = 0,
+                       opts = options,
+                       a1 = 11.9466,
+                       b1 = 104.9291,
+                       a2 = 4.729,
+                       b2 = 14.559,
+                       c = 335,
+                       p = 8.20,
+                       rho = 1/1.05,
+                       alpha = 0.21330949,
+                       scc = 190)
+print(output_carbon$solution)
+```
+
+```{r}
+(exp(4.729 - (14.559 / 46.79731)) - exp(4.729 - (14.559 / 45.81028))) * (1 - 0.21330949)
+```
