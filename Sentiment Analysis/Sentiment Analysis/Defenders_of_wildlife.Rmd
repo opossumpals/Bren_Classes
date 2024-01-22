@@ -1,0 +1,140 @@
+---
+title: "DefendersWildlife"
+author: "Delores Chan"
+date: "2024-01-18"
+output: html_document
+---
+
+```{r setup, include=TRUE, echo = TRUE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(tidyverse)
+library(here)
+library(tidytext)
+library(textdata)
+library(pdftools)
+library(ggwordcloud)
+library(dplyr)
+```
+
+
+```{r}
+### Read in pdf
+
+defenders <- pdf_text(here("NER PDFs", "Defenders_of_Wildlife.pdf"))
+
+#defenders_p2 <- defenders[2]
+#defenders_p2
+```
+
+
+```{r}
+## Extract lines
+defenders_lines <- data.frame(defenders) %>% 
+  mutate(page = 1:n()) %>%
+  mutate(text_full = str_split(defenders, pattern = '\\n')) %>% 
+  unnest(text_full) %>% 
+  mutate(text_full = str_squish(text_full))
+
+defenders_lines
+```
+
+
+```{r}
+### Tidy by pages
+
+defenders_pg <- defenders_lines %>% 
+  slice(-(1:13)) %>% 
+  mutate(page = parse_number(str_extract(text_full, "\\b\\d+$"))) %>%
+  fill(page, .direction = 'up')  %>% 
+  mutate(page = ifelse(page == 1234, 4, page)) %>% 
+  mutate(page = ifelse(page == 2007, 5, page))
+```
+
+
+```{r}
+## Word count by pages
+defenders_words <- defenders_pg %>% 
+  unnest_tokens(word, text_full) %>% 
+  select(-defenders)
+
+defenders_wordcount <- defenders_words %>% 
+  count(page, word)
+```
+
+
+```{r}
+### Remove stop words
+
+defenders_words_clean <- defenders_words %>% 
+  anti_join(stop_words, by = 'word')
+
+defenders_nonstop_counts <- defenders_words_clean %>% 
+  count(page, word)
+```
+
+
+```{r}
+## Top 10 words on Page 1
+top_10_words <- defenders_nonstop_counts %>%
+  filter(page == 1) %>% 
+  arrange(-n) %>%
+  slice(1:10)
+
+
+ggplot(data = top_10_words, aes(x = n, y = reorder(word, -n))) +
+  geom_col(fill = "green4") +
+  labs(x = "Count", y = "Word", title = "Top 10 Most Frequently Used Words in Page 1")
+```
+
+
+
+```{r}
+## Top 10 words in the whole letter
+top_10_words_total <- defenders_nonstop_counts %>% 
+  group_by(word) %>%
+  summarize(n = sum(n))
+
+unique_top_10_words <- top_10_words_total %>%
+  group_by(word) %>%
+  summarize(n = sum(n)) %>%
+  slice_max(order_by = n, n = 10)
+
+ggplot(data = unique_top_10_words, aes(x = n, y = fct_reorder(word, n))) +
+  geom_col(fill = "darkslategray") +
+  labs(x = "Count", y = "Word", title = "Top 10 Most Frequently Used Words")
+```
+
+
+```{r}
+## Sentiment Analysis for the whole letter
+
+#nrc_lex <- get_sentiments(lexicon = "nrc")
+
+defenders_nrc <- defenders_words_clean %>% 
+  inner_join(get_sentiments("nrc"))
+
+defenders_nrc_counts <- defenders_nrc %>% 
+  count(sentiment)
+
+ggplot(data = defenders_nrc_counts, aes(x = n, y = reorder(sentiment, -n), fill = sentiment))+
+  scale_fill_manual(values=c("anticipation" = "green4",
+                             "joy" = "green4",
+                             "positive" = "green4",
+                             "trust" = "green4",
+                             "surprise" = "green4",
+                             "sadness" = "darkslategray",
+                             "disgust" = "darkslategray",
+                             "anger" = "darkslategray",
+                             "negative" = "darkslategray",
+                             "fear" = "darkslategray"))+
+  geom_col()+
+  labs(x = "Count", y = "Sentiment", title = "Sentiment Analysis")+
+  theme_minimal()+
+  theme(legend.position = "none")
+```
+
+
+
+
+
