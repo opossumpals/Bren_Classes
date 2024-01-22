@@ -19,7 +19,9 @@ library(dplyr)
 
 
 ```{r}
-### Read in pdf
+## This is the comment letter written by Defenders of Wildlife in regard to the NOI for an updated bison and elk management plan. The Sierra Club and National Wildlife Refuge Association have also signed on to this letter. 
+
+## Read in pdf
 
 defenders <- pdf_text(here("NER PDFs", "Defenders_of_Wildlife.pdf"))
 
