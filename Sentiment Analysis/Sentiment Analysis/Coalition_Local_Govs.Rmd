@@ -1,0 +1,121 @@
+---
+title: "Coalition_Local_Govs"
+author: "Delores Chan"
+date: "2024-01-25"
+output: html_document
+---
+
+
+```{r setup, include=TRUE, echo = TRUE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(tidyverse)
+library(here)
+library(tidytext)
+library(textdata)
+library(pdftools)
+library(ggwordcloud)
+library(dplyr)
+```
+
+```{r}
+## This is the comment letter written by the Coalition of Local Governments in regard to the NOI for an updated bison and elk management plan. This includes the county commissions of Sweetwarer, Lincoln, and Uinta and the conservation districts for Lincoln, Little Snake, Sweetwater, Uinta, and Sublette. 
+
+## Read in pdf
+
+local_gov <- pdf_text(here("NER PDFs", "Coalition_of_Local_Governments.pdf"))
+
+```
+
+
+```{r}
+## Extract lines
+local_gov_lines <- data.frame(local_gov) %>% 
+  mutate(page = 1:n()) %>%
+  mutate(text_full = str_split(local_gov, pattern = '\\n')) %>% 
+  unnest(text_full) %>% 
+  mutate(text_full = str_squish(text_full))
+
+local_gov_lines
+```
+
+
+```{r}
+### Tidy by pages
+
+local_gov_pg <- local_gov_lines %>% 
+  slice(-(1:25))
+```
+
+
+```{r}
+## Word count by pages
+local_gov_words <- local_gov_pg %>% 
+  unnest_tokens(word, text_full) %>% 
+  select(-local_gov)
+
+local_gov_wordcount <- local_gov_words %>% 
+  count(page, word)
+```
+
+
+```{r}
+### Remove stop words
+
+local_gov_words_clean <- local_gov_words %>% 
+  anti_join(stop_words, by = 'word')
+
+local_gov_nonstop_counts <- local_gov_words_clean %>% 
+  count(page, word)
+```
+
+
+```{r}
+## Top 10 words in the whole letter
+local_gov_top_10_words_total <- local_gov_nonstop_counts %>% 
+  group_by(word) %>%
+  summarize(n = sum(n))
+
+local_gov_unique_top_10_words <- local_gov_top_10_words_total %>%
+  group_by(word) %>%
+  summarize(n = sum(n)) %>%
+  slice_max(order_by = n, n = 10)
+
+ggplot(data = local_gov_unique_top_10_words, aes(x = n, y = fct_reorder(word, n))) +
+  geom_col(fill = "darkslategray") +
+  labs(x = "Count", y = "Word", title = "Top 10 Most Frequently Used Words")
+```
+
+```{r}
+## Sentiment Analysis for the whole letter
+
+#nrc_lex <- get_sentiments(lexicon = "nrc")
+
+local_gov_nrc <- local_gov_words_clean %>% 
+  inner_join(get_sentiments("nrc"))
+
+local_gov_nrc_counts <- local_gov_nrc %>% 
+  count(sentiment)
+
+ggplot(data = local_gov_nrc_counts, aes(x = n, y = reorder(sentiment, -n), fill = sentiment))+
+  scale_fill_manual(values=c("anticipation" = "green4",
+                             "joy" = "green4",
+                             "positive" = "green4",
+                             "trust" = "green4",
+                             "surprise" = "green4",
+                             "sadness" = "darkslategray",
+                             "disgust" = "darkslategray",
+                             "anger" = "darkslategray",
+                             "negative" = "darkslategray",
+                             "fear" = "darkslategray"))+
+  geom_col()+
+  labs(x = "Count", y = "Sentiment", title = "Sentiment Analysis")+
+  theme_minimal()+
+  theme(legend.position = "none")
+```
+
+
+
+
+
+

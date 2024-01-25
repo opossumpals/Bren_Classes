@@ -1,0 +1,117 @@
+---
+title: "WWA"
+author: "Delores Chan"
+date: "2024-01-25"
+output: html_document
+---
+
+```{r setup, include=TRUE, echo = TRUE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(tidyverse)
+library(here)
+library(tidytext)
+library(textdata)
+library(pdftools)
+library(ggwordcloud)
+library(dplyr)
+```
+
+```{r}
+## This is the comment letter written by Wyoming Wildlife Advocates in regard to the NOI for an updated bison and elk management plan. 
+
+## Read in pdf
+
+WWA <- pdf_text(here("NER PDFs", "Wyoming_Wildlife_Advocates.pdf"))
+
+```
+
+
+```{r}
+## Extract lines
+WWA_lines <- data.frame(WWA) %>% 
+  mutate(page = 1:n()) %>%
+  mutate(text_full = str_split(WWA, pattern = '\\n')) %>% 
+  unnest(text_full) %>% 
+  mutate(text_full = str_squish(text_full))
+
+WWA_lines
+```
+
+
+```{r}
+### Tidy by pages
+
+WWA_pg <- WWA_lines %>% 
+  slice(-(1:23)) %>% 
+  filter(!(page >= 24 & page <= 28)) # pages 24-28 are references 
+```
+
+
+```{r}
+## Word count by pages
+WWA_words <- WWA_pg %>% 
+  unnest_tokens(word, text_full) %>% 
+  select(-WWA)
+
+WWA_wordcount <- WWA_words %>% 
+  count(page, word)
+```
+
+
+```{r}
+### Remove stop words
+
+WWA_words_clean <- WWA_words %>% 
+  anti_join(stop_words, by = 'word')
+
+WWA_nonstop_counts <- WWA_words_clean %>% 
+  count(page, word)
+```
+
+
+```{r}
+## Top 10 words in the whole letter
+WWA_top_10_words_total <- WWA_nonstop_counts %>% 
+  group_by(word) %>%
+  summarize(n = sum(n))
+
+WWA_unique_top_10_words <- WWA_top_10_words_total %>%
+  group_by(word) %>%
+  summarize(n = sum(n)) %>%
+  slice_max(order_by = n, n = 10)
+
+ggplot(data = WWA_unique_top_10_words, aes(x = n, y = fct_reorder(word, n))) +
+  geom_col(fill = "darkslategray") +
+  labs(x = "Count", y = "Word", title = "Top 10 Most Frequently Used Words")
+```
+
+
+```{r}
+## Sentiment Analysis for the whole letter
+
+#nrc_lex <- get_sentiments(lexicon = "nrc")
+
+WWA_nrc <- WWA_words_clean %>% 
+  inner_join(get_sentiments("nrc"))
+
+WWA_nrc_counts <- WWA_nrc %>% 
+  count(sentiment)
+
+ggplot(data = WWA_nrc_counts, aes(x = n, y = reorder(sentiment, -n), fill = sentiment))+
+  scale_fill_manual(values=c("anticipation" = "green4",
+                             "joy" = "green4",
+                             "positive" = "green4",
+                             "trust" = "green4",
+                             "surprise" = "green4",
+                             "sadness" = "darkslategray",
+                             "disgust" = "darkslategray",
+                             "anger" = "darkslategray",
+                             "negative" = "darkslategray",
+                             "fear" = "darkslategray"))+
+  geom_col()+
+  labs(x = "Count", y = "Sentiment", title = "Sentiment Analysis")+
+  theme_minimal()+
+  theme(legend.position = "none")
+```
+
