@@ -1,0 +1,116 @@
+---
+title: "Wy_Dept_EQ"
+author: "Delores Chan"
+date: "2024-01-28"
+output: html_document
+---
+
+```{r setup, include=TRUE, echo = TRUE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(tidyverse)
+library(here)
+library(tidytext)
+library(textdata)
+library(pdftools)
+library(ggwordcloud)
+library(dplyr)
+```
+
+```{r}
+## This is the comment letter written by the Wyoming Department of Environmental Quality in regard to the NOI for an updated bison and elk management plan. 
+
+## Read in pdf
+
+Wy_Dept_EQ <- pdf_text(here("NER PDFs", "Wyoming_Dept_Env_Quality.pdf"))
+
+```
+
+
+```{r}
+## Extract lines
+Wy_Dept_EQ_lines <- data.frame(Wy_Dept_EQ) %>% 
+  mutate(page = 1:n()) %>%
+  mutate(text_full = str_split(Wy_Dept_EQ, pattern = '\\n')) %>% 
+  unnest(text_full) %>% 
+  mutate(text_full = str_squish(text_full))
+
+Wy_Dept_EQ_lines
+```
+
+
+```{r}
+### Tidy by pages
+
+Wy_Dept_EQ_pg <- Wy_Dept_EQ_lines %>% 
+  slice(-(1:23))
+```
+
+
+```{r}
+## Word count by pages
+Wy_Dept_EQ_words <- Wy_Dept_EQ_pg %>% 
+  unnest_tokens(word, text_full) %>% 
+  select(-Wy_Dept_EQ)
+
+Wy_Dept_EQ_wordcount <- Wy_Dept_EQ_words %>% 
+  count(page, word)
+```
+
+
+```{r}
+### Remove stop words
+
+Wy_Dept_EQ_words_clean <- Wy_Dept_EQ_words %>% 
+  anti_join(stop_words, by = 'word')
+
+Wy_Dept_EQ_nonstop_counts <- Wy_Dept_EQ_words_clean %>% 
+  count(page, word)
+```
+
+
+```{r}
+## Top 10 words in the whole letter
+Wy_Dept_EQ_top_10_words_total <- Wy_Dept_EQ_nonstop_counts %>% 
+  group_by(word) %>%
+  summarize(n = sum(n))
+
+Wy_Dept_EQ_unique_top_10_words <- Wy_Dept_EQ_top_10_words_total %>%
+  group_by(word) %>%
+  summarize(n = sum(n)) %>%
+  slice_max(order_by = n, n = 10)
+
+ggplot(data = Wy_Dept_EQ_unique_top_10_words, aes(x = n, y = fct_reorder(word, n))) +
+  geom_col(fill = "darkslategray") +
+  labs(x = "Count", y = "Word", title = "Top 10 Most Frequently Used Words")
+```
+
+
+
+```{r}
+## Sentiment Analysis for the whole letter
+
+#nrc_lex <- get_sentiments(lexicon = "nrc")
+
+Wy_Dept_EQ_nrc <- Wy_Dept_EQ_words_clean %>% 
+  inner_join(get_sentiments("nrc"))
+
+Wy_Dept_EQ_nrc_counts <- Wy_Dept_EQ_nrc %>% 
+  count(sentiment)
+
+ggplot(data = Wy_Dept_EQ_nrc_counts, aes(x = n, y = reorder(sentiment, -n), fill = sentiment))+
+  scale_fill_manual(values=c("anticipation" = "green4",
+                             "joy" = "green4",
+                             "positive" = "green4",
+                             "trust" = "green4",
+                             "surprise" = "green4",
+                             "sadness" = "darkslategray",
+                             "disgust" = "darkslategray",
+                             "anger" = "darkslategray",
+                             "negative" = "darkslategray",
+                             "fear" = "darkslategray"))+
+  geom_col()+
+  labs(x = "Count", y = "Sentiment", title = "Sentiment Analysis")+
+  theme_minimal()+
+  theme(legend.position = "none")
+```
