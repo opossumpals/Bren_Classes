@@ -1,3 +1,6 @@
+## Glarma - DC
+####################
+
 install.packages("glarma")
 library(glarma)
 library(here)
@@ -117,7 +120,7 @@ bison_plot_mod_1 <-bison_plot_mod_1 +
   annotate("rect", xmin = 1988, xmax =1988.1, ymin = 0, ymax = 4000, alpha = .75,fill = "red") + 
   annotate("rect", xmin = 1995, xmax =1995.1, ymin = 0, ymax = 4000, alpha = .75,fill = "red")
 
-ggsave(here("plots","bison_plot_mod_1.jpg"), bison_plot_mod_1, dpi=500, width=6, height=3, unit="in")
+ggsave(here("ESM_211", "Portfolio Assignments", "Glarma", "plots","bison_plot_mod_1.jpg"), bison_plot_mod_1, dpi=500, width=6, height=3, unit="in")
 
 bison_plot_mod_1 
 #ERROR MESSAGE: Removed 1 rows containing missing values (`geom_point()`). -- Might just ignore this, I don't know what was removed. (DC)
@@ -143,7 +146,7 @@ bison_plot_mod_2 <-bison_plot_mod_2 +
   annotate("rect", xmin = 1988, xmax =1988.1, ymin = 0, ymax = 4000, alpha = .75,fill = "red") + 
   annotate("rect", xmin = 1995, xmax =1995.1, ymin = 0, ymax = 4000, alpha = .75,fill = "red")
 
-ggsave(here("plots","bison_plot_mod_2.jpg"), bison_plot_mod_2, dpi=500, width=6, height=3, unit="in")
+ggsave(here("ESM_211", "Portfolio Assignments", "Glarma", "plots","bison_plot_mod_2.jpg"), bison_plot_mod_2, dpi=500, width=6, height=3, unit="in")
 
 bison_plot_mod_2
 #ERROR MESSAGE: Removed 1 rows containing missing values (`geom_point()`). -- Might just ignore this, I don't know what was removed. (DC)
@@ -161,18 +164,25 @@ bison_plot_mod_7<-ggplot(bison_mod_7, aes(x=year)) +
   geom_point(col="black",aes(y=est),size=3) +
   geom_line(col="black",aes(y=est)) +
   labs(x="Year", y="Bison Population") +
-  ylim(0,4000) + xlim(1970,1997)+
+  ylim(0,4100) + xlim(1970,1997)+
   theme_bw()
 
 #Adds two red horizontal lines for the occurence of fire and reintroduction of wolves
 bison_plot_mod_7 <-bison_plot_mod_7 + 
-  annotate("rect", xmin = 1988, xmax =1988.1, ymin = 0, ymax = 4000, alpha = .75,fill = "red") + 
-  annotate("rect", xmin = 1995, xmax =1995.1, ymin = 0, ymax = 4000, alpha = .75,fill = "red")
+  annotate("rect", xmin = 1988, xmax =1988.1, ymin = 0, ymax = 4100, alpha = .75,fill = "red") + 
+  annotate("rect", xmin = 1995, xmax =1995.1, ymin = 0, ymax = 4100, alpha = .75,fill = "red")
 
-ggsave(here("plots","bison_plot_mod_7.jpg"), bison_plot_mod_7, dpi=500, width=6, height=3, unit="in")
+ggsave(here("ESM_211", "Portfolio Assignments", "Glarma", "plots","bison_plot_mod_7.jpg"), bison_plot_mod_7, dpi=500, width=6, height=3, unit="in")
 
 bison_plot_mod_7 
 #ERROR MESSAGE: Removed 1 rows containing missing values (`geom_point()`). -- Might just ignore this, I don't know what was removed. (DC)
 
 
 
+summary(null_bison_mod_lag1) #AIC = 7200.342
+summary(null_bison_mod_lag2) #AIC = 6684.275
+summary(null_bison_mod_lag7) #AIC = 14214.01
+
+summary(exp_bison_mod_lag1) #AIC = 5235.738
+summary(exp_bison_mod_lag2) #AIC = 6265.411
+summary(exp_bison_mod_lag7) #AIC = 12944.64
