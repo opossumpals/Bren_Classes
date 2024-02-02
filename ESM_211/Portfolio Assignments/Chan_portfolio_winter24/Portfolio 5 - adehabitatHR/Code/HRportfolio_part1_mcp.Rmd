@@ -1,0 +1,312 @@
+---
+title: "Habitat Range Part 1: MCPs"
+author: "Justine Lang"
+date: "2024-01-30"
+output: 
+  html_document: 
+    code_folding: show
+editor_options: 
+  chunk_output_type: inline
+---
+
+
+#**First we're going to create the MCPs for the Elk data!!**
+
+
+#load in the packages we need
+```{r setup, echo = TRUE, warning = FALSE, message = FALSE, results = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, results = FALSE)
+
+### Our usual friends
+library(tidyverse)
+library(here)
+library(janitor)
+
+### The main package we're working with
+library(adehabitatHR)
+
+### For working with SpatialPointsDataFrames
+library(sp)
+
+### To help with display
+library(scales)
+library(ggmap)
+```
+
+For simplicity's (and R's) sake, we're going to filter our telemetry data to 6 elk from the National Elk Refuge.
+
+#read in the dataset of interest, in this case elk! & do some tidying of the data
+```{r}
+### Read the csv
+elk <- read_csv(here("Portfolio 5 - adehabitatHR", "Data", "elk_collar.csv")) #removed here
+
+### Convert the elk ID column to character to prevent R from getting confused
+elk <- elk %>% 
+  mutate_at("id", as.character)
+
+### To start, let's filter to 6 elk from the National Elk Refuge
+elk_ner <- elk %>% 
+  filter(feedground == "National_Elk_Refuge") %>%  #select a feedground of interest
+  filter(id %in% c("631", "632", "633", "634", "635", "636")) #select id of elk of interest
+```
+
+#now lets make our dataframe into a spatial dataframe
+
+Creating a SpatialPointsDataFrame (from the `sp` package) is necessary for creating the home ranges in `adehabitatHR`. To accomplish this, define the coordinates and set the coordinate reference system. 
+
+```{r}
+### SpatialPointsDataFrame objects don't like missing values, so it helps to remove NA's
+elk_ner <- elk_ner[!is.na(elk_ner$x) & !is.na(elk_ner$y),]
+
+### Only need three columns (id, x, and y coordinates)
+elk.sp <- elk_ner[, c("id", "x", "y")] 
+
+### Define coordinates to create a SpatialPointsDataFrame 
+coordinates(elk.sp) <- c("x", "y")
+
+### Set the coordinate reference system (CRS)
+### The data are UTM points in WGS84 from zone 12N
+proj4string(elk.sp) <- CRS("+proj=utm +zone=12 +datum=WGS84 +units=m +no_defs")
+```
+
+
+#calculate the areas of the MCPs for the elk - Change the Percentage of relocations being included in calculating the area of the MCP 
+
+Use the `mcp` function to calculate the Minimum Convex Polygons. Set the percentage of relocation points to be used to construct the home ranges. Examining the output will provide the home range area. 
+
+```{r}
+### Calculate MCPs for each elk
+elk.mcp <- mcp(elk.sp, percent = 100) #change the percentage & see how the polygon shapes & area change below
+
+### Examine output
+elk.mcp
+```
+
+#lets visualize our elk MCPs
+
+Then we can plot our home range polygons.
+
+```{r}
+### Plot
+### library(scales) # Helps make polygons partly transparent using the alpha argument below
+plot(elk.sp, col = as.factor(elk.sp@data$id), pch = 16)
+plot(elk.mcp, col = alpha(1:5, 0.5), add = TRUE)
+```
+
+#exploratory- home-range level and size- tells us how stable their home-range is 
+
+In this example, we use 100% of relocations to create the elk home ranges, but are all of these areas normally used by individuals? When defining home range, it is important to consider the biology of the species. With an animal that does not move much, such as certain reptiles, it may make sense to include all relocation points. With more mobile birds and mammals, however, this may not be the best approach.
+
+The graphs below, created with the `mcp.area` function, show how the elk home range changes from including 50% to 100% of points. A more linear increase generally indicates a less stable home range size. 
+
+```{r}
+### Calculate the MCP by including 50 to 100 percent of points 
+hrs <- mcp.area(elk.sp, percent = seq(50, 100, by = 5))
+
+### Use "Plot Zoom" in the console or "Show in New Window" for inline output to see the full graphs
+### R doesn't like to display the graphs for more than a few animals/groups at a time; it will give you an error if you try to display too many
+```
+
+```{r}
+hrs ### examine dataframe of home-range size
+```
+
+
+#Now lets make a more comphrehenive map of our elk MPCs
+
+You can also plot the MCPs over a basemap. Here we use the `ggmap` package. There are instructions below for generating your own API key to create a basemap. 
+
+```{r}
+# Transform the point and MCP objects. 
+elk.spgeo <- spTransform(elk.sp, CRS("+proj=longlat"))
+elk.mcpgeo <- spTransform(elk.mcp, CRS("+proj=longlat"))
+
+### To use the stadiamaps basemaps, you will need to generate your own API key
+### You can generate your own for free here: https://client.stadiamaps.com/signup/
+
+register_stadiamaps(key = "YourAPIKey")
+
+mybasemap <- get_stadiamap(bbox = c(left = min(elk.spgeo@coords[,1])-0.005, 
+                                    bottom = min(elk.spgeo@coords[,2])-0.005, 
+                                    right = max(elk.spgeo@coords[,1])+0.005, 
+                                    top = max(elk.spgeo@coords[,2])+0.005), 
+                           zoom = 12)
+
+# Turn the spatial data frame of points into just a dataframe for plotting in ggmap
+elk.geo <- data.frame(elk.spgeo@coords, 
+                          id = elk.spgeo@data$id )
+
+mymap.hr <- ggmap(mybasemap) + 
+  geom_polygon(data = fortify(elk.mcpgeo),  
+               # Polygon layer needs to be "fortified" to add geometry to the dataframe
+              aes(long, lat, colour = id, fill = id),
+              alpha = 0.3) + # alpha sets the transparency
+  geom_point(data = elk.geo, 
+             aes(x = x, y = y, colour = id))  +
+  theme(legend.position = c(0.15, 0.80)) +
+  labs(x = "Longitude", y = "Latitude") +
+  scale_fill_manual(name = "Elk ID",
+                      values = c("red", "blue", "purple", "green", "orange", "yellow"),
+                      breaks = c("631", "632", "633", "634", "635", "636")) +
+  scale_colour_manual(name = "Elk ID",
+                      values = c("red", "blue", "purple", "green", "orange", "yellow"),
+                      breaks = c("631", "632", "633", "634", "635", "636"))
+mymap.hr
+```
+
+
+#Porfolio Assignment Questions Part 1:
+1.How does the elk home range change relative to the different percentages of relocations being included? Based on what you know of elk movement, would it be suitable to include all relocation points? (Hint: are they a particularly mobile animal?)
+
+
+
+#now lets make our dataframe into a spatial dataframe
+```{r}
+### Same process creating your SpatialPointsDataFrame
+
+elk_ner <- elk_ner[!is.na(elk_ner$x) & !is.na(elk_ner$y),]
+
+elk.sp <- elk_ner[, c("id", "x", "y")] 
+
+coordinates(elk.sp) <- c("x", "y")
+
+proj4string(elk.sp) <- CRS("+proj=utm +zone=12 +datum=WGS84 +units=m +no_defs")
+```
+
+#lets select the h using the reference bandwidth
+
+Use the `kernelUD` function to create our kernels. There are multiple approaches to choosing h. The default for this function is "reference bandwidth," which works relatively well with most telemetry data. The downside is that it tends towards "oversmoothing," meaning it often estimates a larger home range than other methods of choosing h. 
+
+```{r}
+kernel.ref <- kernelUD(elk.sp, h = "href")  # href = the reference bandwidth
+image(kernel.ref) # plot
+```
+
+```{r}
+kernel.ref[[1]]@h # The smoothing factor is stored for each animal in the "h" slot
+```
+
+#now lets try the other method of selecting h- Least squares cross validation
+
+A second common method of choosing h is "least squares cross validation," which minimizes the error by comparing the prediction from all data points to the data minus each point. It works especially well if you have GPS collar data with frequently collected locations. However, it may not be as appropriate for infrequent relocation data (every few days or less). 
+
+```{r}
+kernel.lscv <- kernelUD(elk.sp, h = "LSCV") ### Least squares cross validation
+```
+
+```{r}
+image(kernel.lscv) ### plot
+```
+
+You can visually inspect a plot of the LSCV kernels to see how well this method might fit your data. Ideally, you want to look for a dip in the CV value and the h value that corresponds to the minimum CV is used. If there is no minimum (no dip), this can sometimes lead to errors in plotting the kernels. If an animal's habitat is fragmented or if the relocation data is otherwise infrequent, then the LSCV method may not be as appropriate for the data. 
+
+```{r}
+plotLSCV(kernel.lscv) ### Look for a dip
+```
+
+Use the `getverticeshr` function to measure home ranges by setting a percentage of the distribution within the contour lines. A 95% distribution within the contour is the default, but it can be manually changed, along with the default units (hectares are the default output). Like with the MCPs, knowing a species' biology is important in selecting the percentage. A 95% distribution may be ideal for many reptiles and amphibians but not necessarily for other types of animals. 
+
+```{r}
+elk.kernel.poly <- getverticeshr(kernel.ref, percent = 95) 
+print(elk.kernel.poly)  # returns the area of each polygon
+```
+
+#lets plot it 
+```{r}
+color <- rep("white", nrow(elk.sp@data))
+  color[(elk.sp@data$id == "632")] <- "red"
+  color[(elk.sp@data$id == "633")] <- "green"
+  color[(elk.sp@data$id == "634")] <- "blue"
+  color[(elk.sp@data$id == "635")] <- "orange"
+  color[(elk.sp@data$id == "636")] <- "yellow"
+plot(elk.kernel.poly, col = elk.kernel.poly@data$id)
+  plot(elk.sp, add = TRUE, col = color, pch = 21)
+```
+
+#Porfolio Assignment Questions Part 2:
+2. Compare the plots from the 2 methods of choosing "h". Which is more suitable for the elk?
+3. Explore how changing the feedground or elk individuals changes the home-range. What is one thing that stands out to you that is notable/different?
+
+
+
+
+#OPTIONAL: You can also calculate the habitat range for whole herds instead of individual animals. It takes a bit of time and processing power to display the habitat ranges of whole herds on a map, but if you're feeling adventurous, feel free to select one or two fed herds and get mapping! You may need to adjust the map and legend dimensions, but the code is below. 
+
+```{r}
+### Let's filter to elk from 5 different feedgrounds
+fg_sample <- elk %>% 
+  filter(feedground %in% c("Forest_Park", "National_Elk_Refuge", "Horse_Creek", "Soda_Lake", "Dog_Creek")) 
+
+### Use feedground instead of individual elk IDs
+feed.sp <- fg_sample[, c("feedground", "x", "y")] 
+
+### Create a SpatialPointsDataFrame by defining the coordinates
+coordinates(feed.sp) <- c("x", "y")
+
+### Set the coordinate reference system (CRS)
+proj4string(feed.sp) <- CRS("+proj=utm +zone=12 +datum=WGS84 +units=m +no_defs")
+```
+
+```{r}
+### Calculate MCPs for each fed elk herd
+feed.mcp <- mcp(feed.sp, percent = 100)
+
+### Examine output
+feed.mcp
+```
+
+```{r}
+### Plot
+### library(scales) # Helps make polygons partly transparent using the alpha argument below
+plot(feed.sp, col = as.factor(feed.sp@data$feedground), pch = 16)
+plot(feed.mcp, col = alpha(1:5, 0.5), add = TRUE)
+```
+
+```{r}
+### Calculate the MCP by including 50 to 100 percent of points
+hrs_fg <- mcp.area(feed.sp, percent = seq(50, 100, by = 5))
+```
+
+```{r}
+hrs_fg ### examine dataframe
+```
+
+
+```{r}
+### Transform the point and MCP objects. 
+feed.spgeo <- spTransform(feed.sp, CRS("+proj=longlat"))
+feed.mcpgeo <- spTransform(feed.mcp, CRS("+proj=longlat"))
+
+register_stadiamaps(key = "YourAPIKey")
+
+mybasemap_fg <- get_stadiamap(bbox = c(left = min(feed.spgeo@coords[,1])-0.005, 
+                                    bottom = min(feed.spgeo@coords[,2])-0.005, 
+                                    right = max(feed.spgeo@coords[,1])+0.005, 
+                                    top = max(feed.spgeo@coords[,2])+0.005), 
+                           zoom = 12)
+
+### Turn the spatial data frame of points into just a dataframe for plotting in ggmap
+feed.geo <- data.frame(feed.spgeo@coords, 
+                          id = feed.spgeo@data$feedground )
+
+mymap.hr_fg <- ggmap(mybasemap_fg) + 
+  geom_polygon(data = fortify(feed.mcpgeo),  
+               ### Polygon layer needs to be "fortified" to add geometry to the dataframe
+              aes(long, lat, colour = id, fill = id),
+              alpha = 0.3) + ### alpha sets the transparency
+  geom_point(data = feed.geo, 
+             aes(x = x, y = y, colour = id))  +
+  theme(legend.position = c(0.15, 0.80)) +
+  labs(x = "Longitude", y = "Latitude") +
+  scale_fill_manual(name = "Elk Feedground",
+                      values = c("red", "blue", "purple", "green", "orange"),
+                      breaks = c("Forest_Park", "National_Elk_Refuge", "Horse_Creek", "Soda_Lake", "Dog_Creek")) +
+  scale_colour_manual(name = "Elk Feedground",
+                      values = c("red", "blue", "purple", "green", "orange"),
+                      breaks = c("Forest_Park", "National_Elk_Refuge", "Horse_Creek", "Soda_Lake", "Dog_Creek"))
+mymap.hr_fg
+```
+
+
+
+#OPTIONAL- Like with the MCPs, you can repeat this process with the fed elk herds instead of the individual animals, though your computer may get a bit of a workout attempting to create kernels for more than one or two herds at a time, especially through the LSCV method. For the sake of time, we'll skip this today, but if you happen to have time to kill, feel free to go for it!

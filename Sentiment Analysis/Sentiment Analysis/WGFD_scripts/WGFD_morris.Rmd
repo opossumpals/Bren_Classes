@@ -1,0 +1,124 @@
+---
+title: "morris"
+author: "Delores Chan"
+date: "2024-01-31"
+output: html_document
+---
+
+```{r setup, include=TRUE, echo = TRUE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(tidyverse)
+library(here)
+library(tidytext)
+library(textdata)
+library(pdftools)
+library(ggwordcloud)
+library(dplyr)
+```
+
+```{r}
+## Need tesseract for when pdf_text does not work 
+
+#install.packages("tesseract")
+#library(tesseract)
+
+tesseract_download("eng" , datapath = NULL, progress = interactive())
+```
+
+```{r}
+## This is the comment letter written by Dewitt Morris of Mountain Ranch LLCfor the WGFD request for comments and feedback on the Draft Elk Management Plan. 
+
+## Read in pdf
+
+#morris <- pdf_text(here("WGFD PDFs", "Copy of 6 DeWitt Morris comment 9.5.2023.pdf"))
+  
+morris <- ocr(here("WGFD PDFs", "Copy of 6 DeWitt Morris comment 9.5.2023.pdf"), engine = tesseract("eng"), HOCR = FALSE)
+
+
+```
+
+
+```{r}
+## Extract lines
+morris_lines <- data.frame(morris) %>% 
+  mutate(page = 1:n()) %>%
+  mutate(text_full = str_split(morris, pattern = '\\n')) %>% 
+  unnest(text_full) %>% 
+  mutate(text_full = str_squish(text_full))
+```
+
+
+```{r}
+### Tidy by pages
+
+morris_pg <- morris_lines %>% 
+  slice(-(1:16))
+```
+
+
+```{r}
+## Word count by pages
+morris_words <- morris_pg %>% 
+  unnest_tokens(word, text_full) %>% 
+  select(-morris)
+
+morris_wordcount <- morris_words %>% 
+  count(page, word)
+```
+
+
+```{r}
+### Remove stop words
+
+morris_words_clean <- morris_words %>% 
+  anti_join(stop_words, by = 'word')
+
+morris_nonstop_counts <- morris_words_clean %>% 
+  count(page, word)
+```
+
+
+```{r}
+## Top 10 words in the whole letter
+morris_top_10_words_total <- morris_nonstop_counts %>% 
+  group_by(word) %>%
+  summarize(n = sum(n))
+
+morris_unique_top_10_words <- morris_top_10_words_total %>%
+  group_by(word) %>%
+  summarize(n = sum(n)) %>%
+  slice_max(order_by = n, n = 10)
+
+ggplot(data = morris_unique_top_10_words, aes(x = n, y = fct_reorder(word, n))) +
+  geom_col(fill = "darkslategray") +
+  labs(x = "Count", y = "Word", title = "Top 10 Most Frequently Used Words")
+```
+
+```{r}
+## Sentiment Analysis for the whole letter
+
+#nrc_lex <- get_sentiments(lexicon = "nrc")
+
+morris_nrc <- morris_words_clean %>% 
+  inner_join(get_sentiments("nrc"))
+
+morris_nrc_counts <- morris_nrc %>% 
+  count(sentiment)
+
+ggplot(data = morris_nrc_counts, aes(x = n, y = reorder(sentiment, -n), fill = sentiment))+
+  scale_fill_manual(values=c("anticipation" = "green4",
+                             "joy" = "green4",
+                             "positive" = "green4",
+                             "trust" = "green4",
+                             "surprise" = "green4",
+                             "sadness" = "darkslategray",
+                             "disgust" = "darkslategray",
+                             "anger" = "darkslategray",
+                             "negative" = "darkslategray",
+                             "fear" = "darkslategray"))+
+  geom_col()+
+  labs(x = "Count", y = "Sentiment", title = "Sentiment Analysis")+
+  theme_minimal()+
+  theme(legend.position = "none")
+```

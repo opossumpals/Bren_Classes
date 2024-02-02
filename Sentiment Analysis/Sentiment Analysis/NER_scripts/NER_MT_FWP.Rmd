@@ -15,6 +15,7 @@ library(textdata)
 library(pdftools)
 library(ggwordcloud)
 library(dplyr)
+library(tesseract)
 ```
 
 ```{r}
@@ -22,9 +23,9 @@ library(dplyr)
 
 ## Read in pdf
 
-MT_FWP <- pdf_text(here("NER PDFs", "Montana_FWP.pdf"))
+# MT_FWP <- pdf_text(here("NER PDFs", "Montana_FWP.pdf"))
 
-MT_p2 <- MT_FWP[2]
+MT_FWP <- ocr(here("NER PDFs", "Montana_FWP.pdf"), engine = tesseract("eng"), HOCR = FALSE)
 ```
 
 
@@ -43,18 +44,18 @@ MT_FWP_lines
 ```{r}
 ### Tidy by pages
 
-safari_club_pg <- safari_club_lines %>% 
+MT_FWP_pg <- MT_FWP_lines %>% 
   slice(-(1:16))
 ```
 
 
 ```{r}
 ## Word count by pages
-safari_club_words <- safari_club_pg %>% 
+MT_FWP_words <- MT_FWP_pg %>% 
   unnest_tokens(word, text_full) %>% 
-  select(-safari_club)
+  select(-MT_FWP)
 
-safari_club_wordcount <- safari_club_words %>% 
+MT_FWP_wordcount <- MT_FWP_words %>% 
   count(page, word)
 ```
 
@@ -62,26 +63,26 @@ safari_club_wordcount <- safari_club_words %>%
 ```{r}
 ### Remove stop words
 
-safari_club_words_clean <- safari_club_words %>% 
+MT_FWP_words_clean <- MT_FWP_words %>% 
   anti_join(stop_words, by = 'word')
 
-safari_club_nonstop_counts <- safari_club_words_clean %>% 
+MT_FWP_nonstop_counts <- MT_FWP_words_clean %>% 
   count(page, word)
 ```
 
 
 ```{r}
 ## Top 10 words in the whole letter
-safari_club_top_10_words_total <- safari_club_nonstop_counts %>% 
+MT_FWP_top_10_words_total <- MT_FWP_nonstop_counts %>% 
   group_by(word) %>%
   summarize(n = sum(n))
 
-safari_club_unique_top_10_words <- safari_club_top_10_words_total %>%
+MT_FWP_unique_top_10_words <- MT_FWP_top_10_words_total %>%
   group_by(word) %>%
   summarize(n = sum(n)) %>%
   slice_max(order_by = n, n = 10)
 
-ggplot(data = safari_club_unique_top_10_words, aes(x = n, y = fct_reorder(word, n))) +
+ggplot(data = MT_FWP_unique_top_10_words, aes(x = n, y = fct_reorder(word, n))) +
   geom_col(fill = "darkslategray") +
   labs(x = "Count", y = "Word", title = "Top 10 Most Frequently Used Words")
 ```
@@ -93,13 +94,13 @@ ggplot(data = safari_club_unique_top_10_words, aes(x = n, y = fct_reorder(word, 
 
 #nrc_lex <- get_sentiments(lexicon = "nrc")
 
-safari_club_nrc <- safari_club_words_clean %>% 
+MT_FWP_nrc <- MT_FWP_words_clean %>% 
   inner_join(get_sentiments("nrc"))
 
-safari_club_nrc_counts <- safari_club_nrc %>% 
+MT_FWP_nrc_counts <- MT_FWP_nrc %>% 
   count(sentiment)
 
-ggplot(data = safari_club_nrc_counts, aes(x = n, y = reorder(sentiment, -n), fill = sentiment))+
+ggplot(data = MT_FWP_nrc_counts, aes(x = n, y = reorder(sentiment, -n), fill = sentiment))+
   scale_fill_manual(values=c("anticipation" = "green4",
                              "joy" = "green4",
                              "positive" = "green4",
