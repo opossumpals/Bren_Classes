@@ -1,0 +1,121 @@
+---
+title: "WGFD_harris"
+author: "Delores Chan"
+date: "2024-02-03"
+output: html_document
+---
+
+```{r setup, include=TRUE, echo = TRUE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(tidyverse)
+library(here)
+library(tidytext)
+library(textdata)
+library(pdftools)
+library(ggwordcloud)
+library(dplyr)
+library(tesseract)
+```
+
+
+```{r}
+## This is the comment letter written by Chuck Harris for the WGFD request for comments and feedback on the Draft Elk Management Plan. 
+
+## Read in pdf
+
+# harris <- pdf_text(here("WGFD PDFs", "Copy of 21 State of Wyoming Mail - Fwd_ Fw_ Feedgrounds and the Future Chuck Harris.pdf"))
+  
+harris <- ocr(here("WGFD PDFs", "Copy of 21 State of Wyoming Mail - Fwd_ Fw_ Feedgrounds and the Future Chuck Harris.pdf"), engine = tesseract("eng"), HOCR = FALSE)
+
+```
+
+
+```{r}
+## Extract lines
+harris_lines <- data.frame(harris) %>% 
+  mutate(page = 1:n()) %>%
+  mutate(text_full = str_split(harris, pattern = '\\n')) %>% 
+  unnest(text_full) %>% 
+  mutate(text_full = str_squish(text_full))
+```
+
+
+```{r}
+### Tidy by pages
+
+harris_pg <- harris_lines %>% 
+  slice(-(1:18))
+
+harris_pg <- harris_pg %>% 
+  slice(-(70:78))
+```
+
+
+```{r}
+## Word count by pages
+harris_words <- harris_pg %>% 
+  unnest_tokens(word, text_full) %>% 
+  select(-harris)
+
+harris_wordcount <- harris_words %>% 
+  count(page, word)
+```
+
+
+```{r}
+### Remove stop words
+
+harris_words_clean <- harris_words %>% 
+  anti_join(stop_words, by = 'word')
+
+harris_nonstop_counts <- harris_words_clean %>% 
+  count(page, word)
+```
+
+
+```{r}
+## Top 10 words in the whole letter
+harris_top_10_words_total <- harris_nonstop_counts %>% 
+  group_by(word) %>%
+  summarize(n = sum(n))
+
+harris_unique_top_10_words <- harris_top_10_words_total %>%
+  group_by(word) %>%
+  summarize(n = sum(n)) %>%
+  slice_max(order_by = n, n = 10)
+
+ggplot(data = harris_unique_top_10_words, aes(x = n, y = fct_reorder(word, n))) +
+  geom_col(fill = "darkslategray") +
+  labs(x = "Count", y = "Word", title = "Top 10 Most Frequently Used Words")
+```
+
+
+```{r}
+## Sentiment Analysis for the whole letter
+
+#nrc_lex <- get_sentiments(lexicon = "nrc")
+
+harris_nrc <- harris_words_clean %>% 
+  inner_join(get_sentiments("nrc"))
+
+harris_nrc_counts <- harris_nrc %>% 
+  count(sentiment)
+
+ggplot(data = harris_nrc_counts, aes(x = n, y = reorder(sentiment, -n), fill = sentiment))+
+  scale_fill_manual(values=c("anticipation" = "green4",
+                             "joy" = "green4",
+                             "positive" = "green4",
+                             "trust" = "green4",
+                             "surprise" = "green4",
+                             "sadness" = "darkslategray",
+                             "disgust" = "darkslategray",
+                             "anger" = "darkslategray",
+                             "negative" = "darkslategray",
+                             "fear" = "darkslategray"))+
+  geom_col()+
+  labs(x = "Count", y = "Sentiment", title = "Sentiment Analysis")+
+  theme_minimal()+
+  theme(legend.position = "none")
+```
+

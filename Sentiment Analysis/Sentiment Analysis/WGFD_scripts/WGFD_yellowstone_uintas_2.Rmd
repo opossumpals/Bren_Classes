@@ -1,0 +1,116 @@
+---
+title: "WGFD_yellowstone_uintas_2"
+author: "Delores Chan"
+date: "2024-02-04"
+output: html_document
+---
+
+```{r setup, include=TRUE, echo = TRUE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(tidyverse)
+library(here)
+library(tidytext)
+library(textdata)
+library(pdftools)
+library(ggwordcloud)
+library(dplyr)
+```
+
+
+```{r}
+## This is the comment letter written by the Yellowstone to Uintas Coalition for the WGFD request for comments and feedback on the Draft Elk Management Plan. 
+
+## Read in pdf
+
+#yellowstone_uintas <- pdf_text(here("WGFD PDFs", "Copy of 5 J Carter Stakeholder Elk Feedground comments combined.pdf"))
+  
+yellowstone_uintas <- ocr(here("WGFD PDFs", "Copy of 5 J Carter Stakeholder Elk Feedground comments combined.pdf"), engine = tesseract("eng"), HOCR = FALSE)
+
+
+```
+
+
+```{r}
+## Extract lines
+yellowstone_uintas_lines <- data.frame(yellowstone_uintas) %>% 
+  mutate(page = 1:n()) %>%
+  mutate(text_full = str_split(yellowstone_uintas, pattern = '\\n')) %>% 
+  unnest(text_full) %>% 
+  mutate(text_full = str_squish(text_full))
+```
+
+
+```{r}
+### Tidy by pages
+
+yellowstone_uintas_pg <- yellowstone_uintas_lines %>% 
+  slice(-(1:8))
+```
+
+
+```{r}
+## Word count by pages
+yellowstone_uintas_words <- yellowstone_uintas_pg %>% 
+  unnest_tokens(word, text_full) %>% 
+  select(-yellowstone_uintas)
+
+yellowstone_uintas_wordcount <- yellowstone_uintas_words %>% 
+  count(page, word)
+```
+
+
+```{r}
+### Remove stop words
+
+yellowstone_uintas_words_clean <- yellowstone_uintas_words %>% 
+  anti_join(stop_words, by = 'word')
+
+yellowstone_uintas_nonstop_counts <- yellowstone_uintas_words_clean %>% 
+  count(page, word)
+```
+
+
+```{r}
+## Top 10 words in the whole letter
+yellowstone_uintas_top_10_words_total <- yellowstone_uintas_nonstop_counts %>% 
+  group_by(word) %>%
+  summarize(n = sum(n))
+
+yellowstone_uintas_unique_top_10_words <- yellowstone_uintas_top_10_words_total %>%
+  group_by(word) %>%
+  summarize(n = sum(n)) %>%
+  slice_max(order_by = n, n = 10)
+
+ggplot(data = yellowstone_uintas_unique_top_10_words, aes(x = n, y = fct_reorder(word, n))) +
+  geom_col(fill = "darkslategray") +
+  labs(x = "Count", y = "Word", title = "Top 10 Most Frequently Used Words")
+```
+
+```{r}
+## Sentiment Analysis for the whole letter
+
+#nrc_lex <- get_sentiments(lexicon = "nrc")
+
+yellowstone_uintas_nrc <- yellowstone_uintas_words_clean %>% 
+  inner_join(get_sentiments("nrc"))
+
+yellowstone_uintas_nrc_counts <- yellowstone_uintas_nrc %>% 
+  count(sentiment)
+
+ggplot(data = yellowstone_uintas_nrc_counts, aes(x = n, y = reorder(sentiment, -n), fill = sentiment))+
+  scale_fill_manual(values=c("anticipation" = "green4",
+                             "joy" = "green4",
+                             "positive" = "green4",
+                             "trust" = "green4",
+                             "surprise" = "green4",
+                             "sadness" = "darkslategray",
+                             "disgust" = "darkslategray",
+                             "anger" = "darkslategray",
+                             "negative" = "darkslategray",
+                             "fear" = "darkslategray"))+
+  geom_col()+
+  labs(x = "Count", y = "Sentiment", title = "Sentiment Analysis")+
+  theme_minimal()+
+  theme(legend.position = "none")
+```

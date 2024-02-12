@@ -1,0 +1,113 @@
+---
+title: "WGFD_PERC"
+author: "Delores Chan"
+date: "2024-02-04"
+output: html_document
+---
+
+```{r setup, include=TRUE, echo = TRUE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(tidyverse)
+library(here)
+library(tidytext)
+library(textdata)
+library(pdftools)
+library(ggwordcloud)
+library(dplyr)
+```
+
+
+```{r}
+## This is the comment letter written by Travis Brammar of PERC for the WGFD request for comments and feedback on the Draft Elk Management Plan. 
+
+## Read in pdf
+
+perc <- pdf_text(here("WGFD PDFs", "Copy of 14 PERC_WGFD Elk Feedground Plan Comment.pdf"))
+
+```
+
+
+```{r}
+## Extract lines
+perc_lines <- data.frame(perc) %>% 
+  mutate(page = 1:n()) %>%
+  mutate(text_full = str_split(perc, pattern = '\\n')) %>% 
+  unnest(text_full) %>% 
+  mutate(text_full = str_squish(text_full))
+```
+
+
+```{r}
+### Tidy by pages
+
+perc_pg <- perc_lines %>% 
+  slice(-(1:4))
+```
+
+
+```{r}
+## Word count by pages
+perc_words <- perc_pg %>% 
+  unnest_tokens(word, text_full) %>% 
+  select(-perc)
+
+perc_wordcount <- perc_words %>% 
+  count(page, word)
+```
+
+
+```{r}
+### Remove stop words
+
+perc_words_clean <- perc_words %>% 
+  anti_join(stop_words, by = 'word')
+
+perc_nonstop_counts <- perc_words_clean %>% 
+  count(page, word)
+```
+
+
+```{r}
+## Top 10 words in the whole letter
+perc_top_10_words_total <- perc_nonstop_counts %>% 
+  group_by(word) %>%
+  summarize(n = sum(n))
+
+perc_unique_top_10_words <- perc_top_10_words_total %>%
+  group_by(word) %>%
+  summarize(n = sum(n)) %>%
+  slice_max(order_by = n, n = 10)
+
+ggplot(data = perc_unique_top_10_words, aes(x = n, y = fct_reorder(word, n))) +
+  geom_col(fill = "darkslategray") +
+  labs(x = "Count", y = "Word", title = "Top 10 Most Frequently Used Words")
+```
+
+```{r}
+## Sentiment Analysis for the whole letter
+
+#nrc_lex <- get_sentiments(lexicon = "nrc")
+
+perc_nrc <- perc_words_clean %>% 
+  inner_join(get_sentiments("nrc"))
+
+perc_nrc_counts <- perc_nrc %>% 
+  count(sentiment)
+
+ggplot(data = perc_nrc_counts, aes(x = n, y = reorder(sentiment, -n), fill = sentiment))+
+  scale_fill_manual(values=c("anticipation" = "green4",
+                             "joy" = "green4",
+                             "positive" = "green4",
+                             "trust" = "green4",
+                             "surprise" = "green4",
+                             "sadness" = "darkslategray",
+                             "disgust" = "darkslategray",
+                             "anger" = "darkslategray",
+                             "negative" = "darkslategray",
+                             "fear" = "darkslategray"))+
+  geom_col()+
+  labs(x = "Count", y = "Sentiment", title = "Sentiment Analysis")+
+  theme_minimal()+
+  theme(legend.position = "none")
+```

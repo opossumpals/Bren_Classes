@@ -1,0 +1,122 @@
+---
+title: "WGFD_sage_steppe_wild"
+author: "Delores Chan"
+date: "2024-02-04"
+output: html_document
+---
+
+```{r setup, include=TRUE, echo = TRUE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(tidyverse)
+library(here)
+library(tidytext)
+library(textdata)
+library(pdftools)
+library(ggwordcloud)
+library(dplyr)
+```
+
+
+```{r}
+## This is the comment letter written by Jonathan B. Ratner of Sage Steppe Wild for the WGFD request for comments and feedback on the Draft Elk Management Plan. 
+
+## Read in pdf
+
+#morris <- pdf_text(here("WGFD PDFs", "Copy of 6 DeWitt Morris comment 9.5.2023.pdf"))
+  
+sage <- ocr(here("WGFD PDFs", "Copy of 19 Ratner email - Feedground Stakeholder meeting notes.pdf"), engine = tesseract("eng"), HOCR = FALSE)
+
+
+```
+
+
+```{r}
+## Extract lines
+sage_lines <- data.frame(sage) %>% 
+  mutate(page = 1:n()) %>%
+  mutate(text_full = str_split(sage, pattern = '\\n')) %>% 
+  unnest(text_full) %>% 
+  mutate(text_full = str_squish(text_full))
+```
+
+
+```{r}
+### Tidy by pages
+
+sage_pg <- sage_lines %>% 
+  slice(-(1:14))
+
+sage_pg <- sage_pg %>% 
+  slice(-(13:15)) #fluff
+
+sage_pg <- sage_pg %>% 
+  slice(-(23:75)) # email for comment request from WGFD 
+```
+
+
+```{r}
+## Word count by pages
+sage_words <- sage_pg %>% 
+  unnest_tokens(word, text_full) %>% 
+  select(-sage)
+
+sage_wordcount <- sage_words %>% 
+  count(page, word)
+```
+
+
+```{r}
+### Remove stop words
+
+sage_words_clean <- sage_words %>% 
+  anti_join(stop_words, by = 'word')
+
+sage_nonstop_counts <- sage_words_clean %>% 
+  count(page, word)
+```
+
+
+```{r}
+## Top 10 words in the whole letter
+sage_top_10_words_total <- sage_nonstop_counts %>% 
+  group_by(word) %>%
+  summarize(n = sum(n))
+
+sage_unique_top_10_words <- sage_top_10_words_total %>%
+  group_by(word) %>%
+  summarize(n = sum(n)) %>%
+  slice_max(order_by = n, n = 10)
+
+ggplot(data = sage_unique_top_10_words, aes(x = n, y = fct_reorder(word, n))) +
+  geom_col(fill = "darkslategray") +
+  labs(x = "Count", y = "Word", title = "Top 10 Most Frequently Used Words")
+```
+
+```{r}
+## Sentiment Analysis for the whole letter
+
+#nrc_lex <- get_sentiments(lexicon = "nrc")
+
+sage_nrc <- sage_words_clean %>% 
+  inner_join(get_sentiments("nrc"))
+
+sage_nrc_counts <- sage_nrc %>% 
+  count(sentiment)
+
+ggplot(data = sage_nrc_counts, aes(x = n, y = reorder(sentiment, -n), fill = sentiment))+
+  scale_fill_manual(values=c("anticipation" = "green4",
+                             "joy" = "green4",
+                             "positive" = "green4",
+                             "trust" = "green4",
+                             "surprise" = "green4",
+                             "sadness" = "darkslategray",
+                             "disgust" = "darkslategray",
+                             "anger" = "darkslategray",
+                             "negative" = "darkslategray",
+                             "fear" = "darkslategray"))+
+  geom_col()+
+  labs(x = "Count", y = "Sentiment", title = "Sentiment Analysis")+
+  theme_minimal()+
+  theme(legend.position = "none")
+```

@@ -1,0 +1,118 @@
+---
+title: "WGFD_dorsey"
+author: "Delores Chan"
+date: "2024-02-03"
+output: html_document
+---
+
+```{r setup, include=TRUE, echo = TRUE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(tidyverse)
+library(here)
+library(tidytext)
+library(textdata)
+library(pdftools)
+library(ggwordcloud)
+library(dplyr)
+library(tesseract)
+```
+
+
+```{r}
+## This is the comment letter written by Lloyd Dorsey for the WGFD request for comments and feedback on the Draft Elk Management Plan. 
+
+## Read in pdf
+
+dorsey <- pdf_text(here("WGFD PDFs", "Copy of 16 LDorsey comments on Wyo G_F elk feedgrounds mgmnt plan-Aug 28 2023.pdf"))
+
+```
+
+```{r}
+## Extract lines
+dorsey_lines <- data.frame(dorsey) %>% 
+  mutate(page = 1:n()) %>%
+  mutate(text_full = str_split(dorsey, pattern = '\\n')) %>% 
+  unnest(text_full) %>% 
+  mutate(text_full = str_squish(text_full))
+```
+
+
+```{r}
+### Tidy by pages
+
+dorsey_pg <- dorsey_lines %>% 
+  slice(-(1:23))
+
+dorsey_pg <- dorsey_pg %>% 
+  slice(-(1098:1232))
+```
+
+
+```{r}
+## Word count by pages
+dorsey_words <- dorsey_pg %>% 
+  unnest_tokens(word, text_full) %>% 
+  select(-dorsey)
+
+dorsey_wordcount <- dorsey_words %>% 
+  count(page, word)
+```
+
+
+
+```{r}
+### Remove stop words
+
+dorsey_words_clean <- dorsey_words %>% 
+  anti_join(stop_words, by = 'word')
+
+dorsey_nonstop_counts <- dorsey_words_clean %>% 
+  count(page, word)
+```
+
+
+```{r}
+## Top 10 words in the whole letter
+dorsey_top_10_words_total <- dorsey_nonstop_counts %>% 
+  group_by(word) %>%
+  summarize(n = sum(n))
+
+dorsey_unique_top_10_words <- dorsey_top_10_words_total %>%
+  group_by(word) %>%
+  summarize(n = sum(n)) %>%
+  slice_max(order_by = n, n = 10)
+
+ggplot(data = dorsey_unique_top_10_words, aes(x = n, y = fct_reorder(word, n))) +
+  geom_col(fill = "darkslategray") +
+  labs(x = "Count", y = "Word", title = "Top 10 Most Frequently Used Words")
+```
+
+
+```{r}
+## Sentiment Analysis for the whole letter
+
+#nrc_lex <- get_sentiments(lexicon = "nrc")
+
+dorsey_nrc <- dorsey_words_clean %>% 
+  inner_join(get_sentiments("nrc"))
+
+dorsey_nrc_counts <- dorsey_nrc %>% 
+  count(sentiment)
+
+ggplot(data = dorsey_nrc_counts, aes(x = n, y = reorder(sentiment, -n), fill = sentiment))+
+  scale_fill_manual(values=c("anticipation" = "green4",
+                             "joy" = "green4",
+                             "positive" = "green4",
+                             "trust" = "green4",
+                             "surprise" = "green4",
+                             "sadness" = "darkslategray",
+                             "disgust" = "darkslategray",
+                             "anger" = "darkslategray",
+                             "negative" = "darkslategray",
+                             "fear" = "darkslategray"))+
+  geom_col()+
+  labs(x = "Count", y = "Sentiment", title = "Sentiment Analysis")+
+  theme_minimal()+
+  theme(legend.position = "none")
+```

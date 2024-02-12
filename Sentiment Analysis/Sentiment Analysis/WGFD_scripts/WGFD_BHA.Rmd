@@ -1,0 +1,115 @@
+---
+title: "WGFD_BHA"
+author: "Delores Chan"
+date: "2024-02-03"
+output: html_document
+---
+
+```{r setup, include=TRUE, echo = TRUE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(tidyverse)
+library(here)
+library(tidytext)
+library(textdata)
+library(pdftools)
+library(ggwordcloud)
+library(dplyr)
+library(tesseract)
+```
+
+
+```{r}
+## This is the comment letter written by Elizabeth Lynch of Backcountry Hunters and Anglers for the WGFD request for comments and feedback on the Draft Elk Management Plan. 
+
+## Read in pdf
+
+BHA <- pdf_text(here("WGFD PDFs", "Copy of 10 WY BHA Comments - Elk FG Draft Plan - Liz Lynch.pdf"))
+
+```
+
+```{r}
+## Extract lines
+BHA_lines <- data.frame(BHA) %>% 
+  mutate(page = 1:n()) %>%
+  mutate(text_full = str_split(BHA, pattern = '\\n')) %>% 
+  unnest(text_full) %>% 
+  mutate(text_full = str_squish(text_full))
+```
+
+
+```{r}
+### Tidy by pages
+
+BHA_pg <- BHA_lines %>% 
+  slice(-(1:4))
+```
+
+
+```{r}
+## Word count by pages
+BHA_words <- BHA_pg %>% 
+  unnest_tokens(word, text_full) %>% 
+  select(-BHA)
+
+BHA_wordcount <- BHA_words %>% 
+  count(page, word)
+```
+
+
+
+```{r}
+### Remove stop words
+
+BHA_words_clean <- BHA_words %>% 
+  anti_join(stop_words, by = 'word')
+
+BHA_nonstop_counts <- BHA_words_clean %>% 
+  count(page, word)
+```
+
+
+```{r}
+## Top 10 words in the whole letter
+BHA_top_10_words_total <- BHA_nonstop_counts %>% 
+  group_by(word) %>%
+  summarize(n = sum(n))
+
+BHA_unique_top_10_words <- BHA_top_10_words_total %>%
+  group_by(word) %>%
+  summarize(n = sum(n)) %>%
+  slice_max(order_by = n, n = 10)
+
+ggplot(data = BHA_unique_top_10_words, aes(x = n, y = fct_reorder(word, n))) +
+  geom_col(fill = "darkslategray") +
+  labs(x = "Count", y = "Word", title = "Top 10 Most Frequently Used Words")
+```
+
+
+```{r}
+## Sentiment Analysis for the whole letter
+
+#nrc_lex <- get_sentiments(lexicon = "nrc")
+
+BHA_nrc <- BHA_words_clean %>% 
+  inner_join(get_sentiments("nrc"))
+
+BHA_nrc_counts <- BHA_nrc %>% 
+  count(sentiment)
+
+ggplot(data = BHA_nrc_counts, aes(x = n, y = reorder(sentiment, -n), fill = sentiment))+
+  scale_fill_manual(values=c("anticipation" = "green4",
+                             "joy" = "green4",
+                             "positive" = "green4",
+                             "trust" = "green4",
+                             "surprise" = "green4",
+                             "sadness" = "darkslategray",
+                             "disgust" = "darkslategray",
+                             "anger" = "darkslategray",
+                             "negative" = "darkslategray",
+                             "fear" = "darkslategray"))+
+  geom_col()+
+  labs(x = "Count", y = "Sentiment", title = "Sentiment Analysis")+
+  theme_minimal()+
+  theme(legend.position = "none")
+```

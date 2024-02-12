@@ -1,0 +1,120 @@
+---
+title: "WGFD_WyDeptAg"
+author: "Delores Chan"
+date: "2024-02-04"
+output: html_document
+---
+
+
+```{r setup, include=TRUE, echo = TRUE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(tidyverse)
+library(here)
+library(tidytext)
+library(textdata)
+library(pdftools)
+library(ggwordcloud)
+library(dplyr)
+```
+
+
+```{r}
+## This is the comment letter written by Dewitt Morris of Mountain Ranch LLCfor the WGFD request for comments and feedback on the Draft Elk Management Plan. 
+
+## Read in pdf
+
+#wy_dept_ag <- pdf_text(here("WGFD PDFs", "Copy of 17 WY Dept of Ag correspondence - Doug Miyamoto.pdf"))
+  
+wy_dept_ag <- ocr(here("WGFD PDFs", "Copy of 17 WY Dept of Ag correspondence - Doug Miyamoto.pdf"), engine = tesseract("eng"), HOCR = FALSE)
+
+
+```
+
+
+```{r}
+## Extract lines
+wy_dept_ag_lines <- data.frame(wy_dept_ag) %>% 
+  mutate(page = 1:n()) %>%
+  mutate(text_full = str_split(wy_dept_ag, pattern = '\\n')) %>% 
+  unnest(text_full) %>% 
+  mutate(text_full = str_squish(text_full))
+```
+
+
+```{r}
+### Tidy by pages
+
+wy_dept_ag_pg <- wy_dept_ag_lines %>% 
+  slice(-(1:11))
+
+wy_dept_ag_pg <- wy_dept_ag_pg %>% 
+  slice(-(33:227)) #blank page
+```
+
+
+```{r}
+## Word count by pages
+wy_dept_ag_words <- wy_dept_ag_pg %>% 
+  unnest_tokens(word, text_full) %>% 
+  select(-wy_dept_ag)
+
+wy_dept_ag_wordcount <- wy_dept_ag_words %>% 
+  count(page, word)
+```
+
+
+```{r}
+### Remove stop words
+
+wy_dept_ag_words_clean <- wy_dept_ag_words %>% 
+  anti_join(stop_words, by = 'word')
+
+wy_dept_ag_nonstop_counts <- wy_dept_ag_words_clean %>% 
+  count(page, word)
+```
+
+
+```{r}
+## Top 10 words in the whole letter
+wy_dept_ag_top_10_words_total <- wy_dept_ag_nonstop_counts %>% 
+  group_by(word) %>%
+  summarize(n = sum(n))
+
+wy_dept_ag_unique_top_10_words <- wy_dept_ag_top_10_words_total %>%
+  group_by(word) %>%
+  summarize(n = sum(n)) %>%
+  slice_max(order_by = n, n = 10)
+
+ggplot(data = wy_dept_ag_unique_top_10_words, aes(x = n, y = fct_reorder(word, n))) +
+  geom_col(fill = "darkslategray") +
+  labs(x = "Count", y = "Word", title = "Top 10 Most Frequently Used Words")
+```
+
+```{r}
+## Sentiment Analysis for the whole letter
+
+#nrc_lex <- get_sentiments(lexicon = "nrc")
+
+wy_dept_ag_nrc <- wy_dept_ag_words_clean %>% 
+  inner_join(get_sentiments("nrc"))
+
+wy_dept_ag_nrc_counts <- wy_dept_ag_nrc %>% 
+  count(sentiment)
+
+ggplot(data = wy_dept_ag_nrc_counts, aes(x = n, y = reorder(sentiment, -n), fill = sentiment))+
+  scale_fill_manual(values=c("anticipation" = "green4",
+                             "joy" = "green4",
+                             "positive" = "green4",
+                             "trust" = "green4",
+                             "surprise" = "green4",
+                             "sadness" = "darkslategray",
+                             "disgust" = "darkslategray",
+                             "anger" = "darkslategray",
+                             "negative" = "darkslategray",
+                             "fear" = "darkslategray"))+
+  geom_col()+
+  labs(x = "Count", y = "Sentiment", title = "Sentiment Analysis")+
+  theme_minimal()+
+  theme(legend.position = "none")
+```

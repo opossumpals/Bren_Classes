@@ -1,0 +1,113 @@
+---
+title: "WGFD_sierraclub_WWA"
+author: "Delores Chan"
+date: "2024-02-04"
+output: html_document
+---
+
+```{r setup, include=TRUE, echo = TRUE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(tidyverse)
+library(here)
+library(tidytext)
+library(textdata)
+library(pdftools)
+library(ggwordcloud)
+library(dplyr)
+```
+
+
+```{r}
+## This is the comment letter written by the Sierra Club and Wyoming Wildlife Advocates for the WGFD request for comments and feedback on the Draft Elk Management Plan. 
+
+## Read in pdf
+
+sc_wwa <- pdf_text(here("WGFD PDFs", "Copy of 12 Elk Feedgrounds Organizational Comments - Sierra Club and Wy Wildlife Ad - Kelsey Yarzab.pdf"))
+
+```
+
+
+```{r}
+## Extract lines
+sc_wwa_lines <- data.frame(sc_wwa) %>% 
+  mutate(page = 1:n()) %>%
+  mutate(text_full = str_split(sc_wwa, pattern = '\\n')) %>% 
+  unnest(text_full) %>% 
+  mutate(text_full = str_squish(text_full))
+```
+
+
+```{r}
+### Tidy by pages
+
+sc_wwa_pg <- sc_wwa_lines %>% 
+  slice(-(1:12))
+```
+
+
+```{r}
+## Word count by pages
+sc_wwa_words <- sc_wwa_pg %>% 
+  unnest_tokens(word, text_full) %>% 
+  select(-sc_wwa)
+
+sc_wwa_wordcount <- sc_wwa_words %>% 
+  count(page, word)
+```
+
+
+```{r}
+### Remove stop words
+
+sc_wwa_words_clean <- sc_wwa_words %>% 
+  anti_join(stop_words, by = 'word')
+
+sc_wwa_nonstop_counts <- sc_wwa_words_clean %>% 
+  count(page, word)
+```
+
+
+```{r}
+## Top 10 words in the whole letter
+sc_wwa_top_10_words_total <- sc_wwa_nonstop_counts %>% 
+  group_by(word) %>%
+  summarize(n = sum(n))
+
+sc_wwa_unique_top_10_words <- sc_wwa_top_10_words_total %>%
+  group_by(word) %>%
+  summarize(n = sum(n)) %>%
+  slice_max(order_by = n, n = 10)
+
+ggplot(data = sc_wwa_unique_top_10_words, aes(x = n, y = fct_reorder(word, n))) +
+  geom_col(fill = "darkslategray") +
+  labs(x = "Count", y = "Word", title = "Top 10 Most Frequently Used Words")
+```
+
+```{r}
+## Sentiment Analysis for the whole letter
+
+#nrc_lex <- get_sentiments(lexicon = "nrc")
+
+sc_wwa_nrc <- sc_wwa_words_clean %>% 
+  inner_join(get_sentiments("nrc"))
+
+sc_wwa_nrc_counts <- sc_wwa_nrc %>% 
+  count(sentiment)
+
+ggplot(data = sc_wwa_nrc_counts, aes(x = n, y = reorder(sentiment, -n), fill = sentiment))+
+  scale_fill_manual(values=c("anticipation" = "green4",
+                             "joy" = "green4",
+                             "positive" = "green4",
+                             "trust" = "green4",
+                             "surprise" = "green4",
+                             "sadness" = "darkslategray",
+                             "disgust" = "darkslategray",
+                             "anger" = "darkslategray",
+                             "negative" = "darkslategray",
+                             "fear" = "darkslategray"))+
+  geom_col()+
+  labs(x = "Count", y = "Sentiment", title = "Sentiment Analysis")+
+  theme_minimal()+
+  theme(legend.position = "none")
+```

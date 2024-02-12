@@ -1,0 +1,112 @@
+---
+title: "WGFD_weston"
+author: "Delores Chan"
+date: "2024-02-04"
+output: html_document
+---
+
+```{r setup, include=TRUE, echo = TRUE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(tidyverse)
+library(here)
+library(tidytext)
+library(textdata)
+library(pdftools)
+library(ggwordcloud)
+library(dplyr)
+```
+
+
+```{r}
+## This is the comment letter written by David Tysdal of the Weston County Natural Resource District for the WGFD request for comments and feedback on the Draft Elk Management Plan. 
+
+## Read in pdf
+
+weston <- pdf_text(here("WGFD PDFs", "Copy of 11 Wyo.game.fish.elk.feed.grounds.comment.letter - Caleb Carter, Tysdal.pdf"))
+```
+
+
+```{r}
+## Extract lines
+weston_lines <- data.frame(weston) %>% 
+  mutate(page = 1:n()) %>%
+  mutate(text_full = str_split(weston, pattern = '\\n')) %>% 
+  unnest(text_full) %>% 
+  mutate(text_full = str_squish(text_full))
+```
+
+
+```{r}
+### Tidy by pages
+
+weston_pg <- weston_lines %>% 
+  slice(-(1:16))
+```
+
+
+```{r}
+## Word count by pages
+weston_words <- weston_pg %>% 
+  unnest_tokens(word, text_full) %>% 
+  select(-weston)
+
+weston_wordcount <- weston_words %>% 
+  count(page, word)
+```
+
+
+```{r}
+### Remove stop words
+
+weston_words_clean <- weston_words %>% 
+  anti_join(stop_words, by = 'word')
+
+weston_nonstop_counts <- weston_words_clean %>% 
+  count(page, word)
+```
+
+
+```{r}
+## Top 10 words in the whole letter
+weston_top_10_words_total <- weston_nonstop_counts %>% 
+  group_by(word) %>%
+  summarize(n = sum(n))
+
+weston_unique_top_10_words <- weston_top_10_words_total %>%
+  group_by(word) %>%
+  summarize(n = sum(n)) %>%
+  slice_max(order_by = n, n = 10)
+
+ggplot(data = weston_unique_top_10_words, aes(x = n, y = fct_reorder(word, n))) +
+  geom_col(fill = "darkslategray") +
+  labs(x = "Count", y = "Word", title = "Top 10 Most Frequently Used Words")
+```
+
+```{r}
+## Sentiment Analysis for the whole letter
+
+#nrc_lex <- get_sentiments(lexicon = "nrc")
+
+weston_nrc <- weston_words_clean %>% 
+  inner_join(get_sentiments("nrc"))
+
+weston_nrc_counts <- weston_nrc %>% 
+  count(sentiment)
+
+ggplot(data = weston_nrc_counts, aes(x = n, y = reorder(sentiment, -n), fill = sentiment))+
+  scale_fill_manual(values=c("anticipation" = "green4",
+                             "joy" = "green4",
+                             "positive" = "green4",
+                             "trust" = "green4",
+                             "surprise" = "green4",
+                             "sadness" = "darkslategray",
+                             "disgust" = "darkslategray",
+                             "anger" = "darkslategray",
+                             "negative" = "darkslategray",
+                             "fear" = "darkslategray"))+
+  geom_col()+
+  labs(x = "Count", y = "Sentiment", title = "Sentiment Analysis")+
+  theme_minimal()+
+  theme(legend.position = "none")
+```

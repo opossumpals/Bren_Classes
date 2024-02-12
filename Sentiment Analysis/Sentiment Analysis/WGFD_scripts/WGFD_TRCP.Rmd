@@ -1,0 +1,121 @@
+---
+title: "WGFD_TRCP"
+author: "Delores Chan"
+date: "2024-02-03"
+output: html_document
+---
+
+```{r setup, include=TRUE, echo = TRUE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(tidyverse)
+library(here)
+library(tidytext)
+library(textdata)
+library(pdftools)
+library(ggwordcloud)
+library(dplyr)
+library(tesseract)
+```
+
+
+```{r}
+## This is the comment letter written by Josh Metten of the Theodore Roosevelt Conservation Partnership for the WGFD request for comments and feedback on the Draft Elk Management Plan. 
+
+## Read in pdf
+
+TRCP <- pdf_text(here("WGFD PDFs", "Copy of 9 TRCP WY Elk Feedgrounds Comments 9-10-23.pdf"))
+
+```
+
+```{r}
+## Extract lines
+TRCP_lines <- data.frame(TRCP) %>% 
+  mutate(page = 1:n()) %>%
+  mutate(text_full = str_split(TRCP, pattern = '\\n')) %>% 
+  unnest(text_full) %>% 
+  mutate(text_full = str_squish(text_full))
+```
+
+
+```{r}
+### Tidy by pages
+
+TRCP_pg <- TRCP_lines %>% 
+  slice(-(36:51))
+
+TRCP_pg <- TRCP_pg %>% 
+  slice(-(1:8))
+
+TRCP_pg <- TRCP_pg %>% 
+  slice(-(69:70))
+```
+
+
+```{r}
+## Word count by pages
+TRCP_words <- TRCP_pg %>% 
+  unnest_tokens(word, text_full) %>% 
+  select(-TRCP)
+
+TRCP_wordcount <- TRCP_words %>% 
+  count(page, word)
+```
+
+
+
+```{r}
+### Remove stop words
+
+TRCP_words_clean <- TRCP_words %>% 
+  anti_join(stop_words, by = 'word')
+
+TRCP_nonstop_counts <- TRCP_words_clean %>% 
+  count(page, word)
+```
+
+
+```{r}
+## Top 10 words in the whole letter
+TRCP_top_10_words_total <- TRCP_nonstop_counts %>% 
+  group_by(word) %>%
+  summarize(n = sum(n))
+
+TRCP_unique_top_10_words <- TRCP_top_10_words_total %>%
+  group_by(word) %>%
+  summarize(n = sum(n)) %>%
+  slice_max(order_by = n, n = 10)
+
+ggplot(data = TRCP_unique_top_10_words, aes(x = n, y = fct_reorder(word, n))) +
+  geom_col(fill = "darkslategray") +
+  labs(x = "Count", y = "Word", title = "Top 10 Most Frequently Used Words")
+```
+
+
+```{r}
+## Sentiment Analysis for the whole letter
+
+#nrc_lex <- get_sentiments(lexicon = "nrc")
+
+TRCP_nrc <- TRCP_words_clean %>% 
+  inner_join(get_sentiments("nrc"))
+
+TRCP_nrc_counts <- TRCP_nrc %>% 
+  count(sentiment)
+
+ggplot(data = TRCP_nrc_counts, aes(x = n, y = reorder(sentiment, -n), fill = sentiment))+
+  scale_fill_manual(values=c("anticipation" = "green4",
+                             "joy" = "green4",
+                             "positive" = "green4",
+                             "trust" = "green4",
+                             "surprise" = "green4",
+                             "sadness" = "darkslategray",
+                             "disgust" = "darkslategray",
+                             "anger" = "darkslategray",
+                             "negative" = "darkslategray",
+                             "fear" = "darkslategray"))+
+  geom_col()+
+  labs(x = "Count", y = "Sentiment", title = "Sentiment Analysis")+
+  theme_minimal()+
+  theme(legend.position = "none")
+```

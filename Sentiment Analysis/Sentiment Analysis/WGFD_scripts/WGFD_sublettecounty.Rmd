@@ -1,0 +1,113 @@
+---
+title: "WGFD_sublettecounty"
+author: "Delores Chan"
+date: "2024-02-04"
+output: html_document
+---
+
+```{r setup, include=TRUE, echo = TRUE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(tidyverse)
+library(here)
+library(tidytext)
+library(textdata)
+library(pdftools)
+library(ggwordcloud)
+library(dplyr)
+```
+
+
+```{r}
+## This is the comment letter written by Mike Henn of the Sublette County Conservationn District for the WGFD request for comments and feedback on the Draft Elk Management Plan. 
+
+## Read in pdf
+
+sublette <- pdf_text(here("WGFD PDFs", "Copy of 13 Elk Feedground Comments Sublette CO CD - Mike Henn.pdf"))
+
+```
+
+
+```{r}
+## Extract lines
+sublette_lines <- data.frame(sublette) %>% 
+  mutate(page = 1:n()) %>%
+  mutate(text_full = str_split(sublette, pattern = '\\n')) %>% 
+  unnest(text_full) %>% 
+  mutate(text_full = str_squish(text_full))
+```
+
+
+```{r}
+### Tidy by pages
+
+sublette_pg <- sublette_lines %>% 
+  slice(-(1:13))
+```
+
+
+```{r}
+## Word count by pages
+sublette_words <- sublette_pg %>% 
+  unnest_tokens(word, text_full) %>% 
+  select(-sublette)
+
+sublette_wordcount <- sublette_words %>% 
+  count(page, word)
+```
+
+
+```{r}
+### Remove stop words
+
+sublette_words_clean <- sublette_words %>% 
+  anti_join(stop_words, by = 'word')
+
+sublette_nonstop_counts <- sublette_words_clean %>% 
+  count(page, word)
+```
+
+
+```{r}
+## Top 10 words in the whole letter
+sublette_top_10_words_total <- sublette_nonstop_counts %>% 
+  group_by(word) %>%
+  summarize(n = sum(n))
+
+sublette_unique_top_10_words <- sublette_top_10_words_total %>%
+  group_by(word) %>%
+  summarize(n = sum(n)) %>%
+  slice_max(order_by = n, n = 10)
+
+ggplot(data = sublette_unique_top_10_words, aes(x = n, y = fct_reorder(word, n))) +
+  geom_col(fill = "darkslategray") +
+  labs(x = "Count", y = "Word", title = "Top 10 Most Frequently Used Words")
+```
+
+```{r}
+## Sentiment Analysis for the whole letter
+
+#nrc_lex <- get_sentiments(lexicon = "nrc")
+
+sublette_nrc <- sublette_words_clean %>% 
+  inner_join(get_sentiments("nrc"))
+
+sublette_nrc_counts <- sublette_nrc %>% 
+  count(sentiment)
+
+ggplot(data = sublette_nrc_counts, aes(x = n, y = reorder(sentiment, -n), fill = sentiment))+
+  scale_fill_manual(values=c("anticipation" = "green4",
+                             "joy" = "green4",
+                             "positive" = "green4",
+                             "trust" = "green4",
+                             "surprise" = "green4",
+                             "sadness" = "darkslategray",
+                             "disgust" = "darkslategray",
+                             "anger" = "darkslategray",
+                             "negative" = "darkslategray",
+                             "fear" = "darkslategray"))+
+  geom_col()+
+  labs(x = "Count", y = "Sentiment", title = "Sentiment Analysis")+
+  theme_minimal()+
+  theme(legend.position = "none")
+```
