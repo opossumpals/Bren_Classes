@@ -1,0 +1,89 @@
+---
+title: "WGFD_public_survey_response"
+author: "Delores Chan"
+date: "2024-02-19"
+output: html_document
+---
+
+```{r setup, include=TRUE, echo = TRUE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(here)
+library(dplyr)
+library(janitor)
+library(tidytext)
+```
+
+```{r}
+# Read in data 
+response <- read.csv(here("WGFD PDFs", "Copy of 2000 Survey Monkey - FG DRAFT Plan Public Survey Final 9.11.2023.xlsx - Sheet.csv")) 
+response_clean <- clean_names(response)
+```
+
+
+```{r}
+# Filter data 
+public <- response_clean %>%  
+  filter(group_you_most_align_with == "General Public")
+
+sports <- response_clean %>% 
+  filter(group_you_most_align_with == "Sportspersons")
+
+gov <- response_clean %>%  
+  filter(group_you_most_align_with == "Government/Elected")
+
+outfitter <- response_clean %>%  
+  filter(group_you_most_align_with == "Outfitters/Guides")
+
+noa <- response_clean %>% 
+  filter(group_you_most_align_with == "None of the above")
+
+landowner <- response_clean %>% 
+  filter(group_you_most_align_with == "Landowners")
+
+# will likely need further filtering to capture difference between NGO groups. Safari Club is the only hunting org. 
+ngo <- response_clean %>%  
+  filter(group_you_most_align_with == "NGO's")
+```
+
+
+```{r}
+gov_add_mod <- gov %>% 
+  select(participant_information, what_specific_additions_or_modifications_to_the_draft_would_improve_the_plan_s_direction_to_accomplish_the_goals_and_sideboards_described_above)
+
+gov_add_mod_words <- gov_add_mod %>%
+  unnest_tokens(word, what_specific_additions_or_modifications_to_the_draft_would_improve_the_plan_s_direction_to_accomplish_the_goals_and_sideboards_described_above)
+
+gov_add_mod_wordcount <- gov_add_mod_words %>% 
+  count(participant_information, word)
+
+gov_add_mod_words_clean <- gov_add_mod_words %>% 
+  anti_join(stop_words, by = 'word')
+
+#dorsey_nonstop_counts <- dorsey_words_clean %>% count(page, word)
+
+gov_add_mod_nrc <- gov_add_mod_words_clean %>% 
+  inner_join(get_sentiments("nrc"))
+
+gov_add_mod_nrc_counts <- gov_add_mod_nrc %>% 
+  count(sentiment)
+
+ggplot(data = gov_add_mod_nrc_counts, aes(x = n, y = reorder(sentiment, -n), fill = sentiment))+
+  scale_fill_manual(values=c("anticipation" = "green4",
+                             "joy" = "green4",
+                             "positive" = "green4",
+                             "trust" = "green4",
+                             "surprise" = "green4",
+                             "sadness" = "darkslategray",
+                             "disgust" = "darkslategray",
+                             "anger" = "darkslategray",
+                             "negative" = "darkslategray",
+                             "fear" = "darkslategray"))+
+  geom_col()+
+  labs(x = "Count", y = "Sentiment", title = "Sentiment Analysis")+
+  theme_minimal()+
+  theme(legend.position = "none")
+```
+```{r}
+gov_add_mod_pos_word <- gov_add_mod_nrc %>%  filter(sentiment == "positive")
+```
+
