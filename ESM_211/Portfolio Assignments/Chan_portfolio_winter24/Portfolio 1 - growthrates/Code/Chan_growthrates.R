@@ -1,3 +1,6 @@
+## growthrates - DC
+####################
+
 
 # Install and load packages
 # Install.packages("growthrates")
@@ -7,7 +10,7 @@ library(ggplot2)
 library(here)
 
 ## Call in data 
-bison <- read.csv(here("Portfolio 3 - growthrates", "Data", "bison.csv"))
+bison <- read.csv(here("Portfolio 1 - growthrates", "Data", "bison.csv"))
 summary(bison)
 
 bison_gg <- ggplot(bison, aes(x=year)) + 
@@ -44,4 +47,4 @@ bison_spline <- fit_spline(bison$year, bison$bison)
 coef(bison_spline)
 
 ## 2. do the different models agree on parameter values? 
-
+# No the models do not agree on parameter values. 

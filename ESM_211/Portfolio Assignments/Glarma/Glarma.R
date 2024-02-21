@@ -8,7 +8,7 @@ library(dplyr)
 library(tidyverse)
 
 ## Read in data and add intercept
-bison <- read.csv(here("ESM_211", "Portfolio Assignments", "Glarma", "Data","bison.csv"))
+bison <- read.csv(here("Portfolio 2 - glarma", "Data","bison.csv"))
 
 bison$intercept<-as.integer(1)
 

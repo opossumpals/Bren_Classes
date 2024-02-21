@@ -1,0 +1,121 @@
+---
+title: "survival_pres"
+author: "Lars C. Nelson"
+date: "2024-02-05"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(janitor)
+library(tidyverse)
+library(here)
+library(dplyr)
+library(ggplot2)
+library(survival)
+
+```
+
+```{r}
+surv_data <- data.frame(
+  Time_to_Event = c(10, 15, 20, 25, 30),
+  Event_Status = c(1, 0, 1, 1, 0),
+  Covariate1 = c(25, 30, 35, 40, 45),
+  Covariate2 = c("A", "B", "A", "B", "A")
+  
+
+```
+
+```{r}
+# Here's a little run through on the basics of your Cox Proportional Hazard Model. You will not need this part of the script, it is here for reference of the bare bones.  
+# Load the survival package
+library(survival)
+
+# Generate example data
+set.seed(123)
+
+n <- 100  # Number of observations
+
+time <- rexp(n, rate = 0.1)  # Simulating survival times from an exponential distribution
+
+status <- sample(0:1, n, replace = TRUE)  # Simulating event indicators (0=censored, 1=event)
+
+covariate <- factor(sample(c("A", "B"), n, replace = TRUE))  # Simulating a categorical covariate
+
+# Create a data frame
+data <- data.frame(Time = time, Event = status, Covariate = covariate)
+
+# Fit a Cox Proportional Hazards model
+cox_model <- coxph(Surv(Time, Event) ~ Covariate, data = data)
+
+# Display the summary of the model
+summary(cox_model)
+
+```
+
+```{r} 
+# You will use this code for the exercise.
+
+# Load your data. Duh.
+mussels <- read_csv(here("Davis_quagga_mussels.csv"))
+```
+
+```{r}
+# Fit a Cox Proportional Hazards model
+cox_model <- coxph(Surv(day, status) ~ treatment, data = mussels)
+# Display the summary of the model
+summary(cox_model)
+```
+
+```{r}
+# Calculate Kaplan-Meier survival curves
+
+# For the overall study population
+km_fit_total<-survfit(Surv(day,status)~1, data=mussels)
+
+# Check it
+summary(km_fit_total)
+
+```
+
+```{r}
+cph_diff<-(Surv(day, status) ~ treatment , data=mussels)
+summary(cph_diff)
+
+survdiff(Surv(time, status)~sex, data=lung)
+```
+
+
+```{r}
+# From Chris' code...
+
+# Calculate Kaplan-Meier survival curves for the overall study population
+km_fit_total<-survfit(Surv(day,status)~1, data=mussels)
+
+# Calculate Kaplan-Meier survival curves for each treatment
+km_fit_treatments <- survfit(Surv(day, status) ~ treatment, data=mussels)
+
+
+# Create a survival plot with KM curves using ggplot2
+ggsurvplot(fit = survfit(Surv(day, status) ~ treatment, data = mussels), conf.int = TRUE, xlab = "Days", ylab = "Overall survival probability")
+
+
+```
+
+
+```{r}
+# Lars' code...
+
+km_fit_9_ppm <- survfit(Surv(day, status) ~ treatment, data = subset(mussels, treatment == "9_ppm_Ca"))
+km_fit_12_ppm <- survfit(Surv(day, status) ~ treatment, data = subset(mussels, treatment == "12_ppm_Ca"))
+
+ggplot() +
+  geom_step(aes(x = km_fit_9_ppm$time, y = 1 - km_fit_9_ppm$surv, color = "9_ppm_Ca"), size = 1) +
+  geom_step(aes(x = km_fit_12_ppm$time, y = 1 - km_fit_12_ppm$surv, color = "12_ppm_Ca"), size = 1) +
+  labs(title = "Kaplan-Meier Survival Curves",
+       x = "Time (days)",
+       y = "Survival Probability",
+       color = "treatment") +
+  theme_minimal()
+```
+
