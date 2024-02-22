@@ -87,3 +87,21 @@ ggplot(data = gov_add_mod_nrc_counts, aes(x = n, y = reorder(sentiment, -n), fil
 gov_add_mod_pos_word <- gov_add_mod_nrc %>%  filter(sentiment == "positive")
 ```
 
+
+
+
+```{r}
+gov_add_mod_top_10_words_total <- gov_add_mod_words_clean %>% 
+  group_by(word) %>%
+  summarize(n = sum(n))
+
+gov_add_mod_unique_top_10_words <- gov_add_mod_top_10_words_total %>%
+  group_by(word) %>%
+  summarize(n = sum(n)) %>%
+  slice_max(order_by = n, n = 10)
+
+ggplot(data = gov_add_mod_unique_top_10_words, aes(x = n, y = fct_reorder(word, n))) +
+  geom_col(fill = "darkslategray") +
+  labs(x = "Count", y = "Word", title = "Top 10 Most Frequently Used Words")
+```
+
