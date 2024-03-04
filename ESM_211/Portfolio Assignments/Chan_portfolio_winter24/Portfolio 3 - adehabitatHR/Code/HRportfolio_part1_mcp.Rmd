@@ -38,7 +38,7 @@ For simplicity's (and R's) sake, we're going to filter our telemetry data to 6 e
 #read in the dataset of interest, in this case elk! & do some tidying of the data
 ```{r}
 ### Read the csv
-elk <- read_csv(here("Portfolio 5 - adehabitatHR", "Data", "elk_collar.csv")) #removed here
+elk <- read_csv(here("Portfolio 3 - adehabitatHR", "Data", "elk_collar.csv")) #removed here
 
 ### Convert the elk ID column to character to prevent R from getting confused
 elk <- elk %>% 

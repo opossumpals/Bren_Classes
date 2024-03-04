@@ -1,0 +1,71 @@
+---
+title: "Cougars_LA_County"
+author: "Delores Chan"
+date: "2024-02-29"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages("rinat")
+library(rinat)
+library(tidyverse)
+library(here)
+library(janitor)
+library(adehabitatHR)
+library(dplyr)
+```
+
+
+```{r}
+#la bounding box from: https://anthonylouisdagostino.com/bounding-boxes-for-all-us-counties/
+
+bounds <- c(-118.951721, 32.75004, -117.646374,	34.823302)
+cougars <- get_inat_obs(query="Puma concolor", place_id = 962, maxresults=5000)
+
+plot(cougars$longitude, cougars$latitude)
+
+#Error in get_inat_obs(query = "Puma concolor", bounds = bounds) : Your search returned zero results. Either your species of interest has no records or you entered an invalid search.
+```
+
+```{r}
+#clean data downloaded from inat
+
+cougar_inat <- read.csv(here("Data", "verified_inat_puma.csv"))
+
+#cougar_clean <- clean_names(cougar_inat) %>% 
+  #select(private_place_guess)
+
+## for some reason select() did not want to work today >:(
+columns_to_remove <- c("private_place_guess", "private_latitude", "private_longitude")
+cougar_clean <- cougar_inat[, !names(cougar_inat) %in% columns_to_remove]
+
+
+cougar_lat_long <- data.frame(cougar_clean$id, cougar_clean$observed_on, cougar_clean$latitude, cougar_clean$longitude)
+```
+
+
+```{r}
+
+#data <- "Data/cougar_lat_long.csv"
+write.csv(cougar_lat_long, "Data/cougar_lat_long.csv")
+
+write.csv(cougar_clean, "Data/cougar_clean.csv")
+```
+
+
+```{r}
+#coerce into spatial data frame 
+cougar_inat <- cougar_inat[!is.na(cougar_inat$logitude) & !is.na(cougar_inat$latitude),]
+cougar.sp <- cougar_inat[,c("id", "longitude", "latitude")]
+
+coordinates(cougar.sp) <- c("longitude", "latitude")
+proj4string(cougar.sp) <- CRS("+proj=utm +zone=12 +datum=WGS84 +units=m +no_defs")
+```
+
+```{r}
+#calculate mcps 
+
+cougar.mcp <- mcp(cougar.sp, percent=100)
+```
+
