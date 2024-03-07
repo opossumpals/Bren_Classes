@@ -14,6 +14,7 @@ library(here)
 library(janitor)
 library(adehabitatHR)
 library(dplyr)
+library(ggmap)
 ```
 
 
@@ -29,43 +30,83 @@ plot(cougars$longitude, cougars$latitude)
 ```
 
 ```{r}
-#clean data downloaded from inat
+# df with just id, lat, and long 
 
-cougar_inat <- read.csv(here("Data", "verified_inat_puma.csv"))
-
-#cougar_clean <- clean_names(cougar_inat) %>% 
-  #select(private_place_guess)
-
-## for some reason select() did not want to work today >:(
-columns_to_remove <- c("private_place_guess", "private_latitude", "private_longitude")
-cougar_clean <- cougar_inat[, !names(cougar_inat) %in% columns_to_remove]
-
-
-cougar_lat_long <- data.frame(cougar_clean$id, cougar_clean$observed_on, cougar_clean$latitude, cougar_clean$longitude)
+cougar_lat_long <- data.frame(cougars$id, cougars$observed_on, cougars$latitude, cougars$longitude)
 ```
 
-
 ```{r}
+# df chnaing all id's to 1 (whole population)
 
-#data <- "Data/cougar_lat_long.csv"
-write.csv(cougar_lat_long, "Data/cougar_lat_long.csv")
-
-write.csv(cougar_clean, "Data/cougar_clean.csv")
+la_county_cougars <- data.frame(cougars$longitude, cougars$latitude) %>% 
+  add_column(id=1) %>% 
+  rename(x=cougars.longitude, y=cougars.latitude)
 ```
 
 
 ```{r}
 #coerce into spatial data frame 
-cougar_inat <- cougar_inat[!is.na(cougar_inat$logitude) & !is.na(cougar_inat$latitude),]
-cougar.sp <- cougar_inat[,c("id", "longitude", "latitude")]
 
-coordinates(cougar.sp) <- c("longitude", "latitude")
+cougar.sp <- la_county_cougars[!is.na(la_county_cougars$x) & !is.na(la_county_cougars$y),]
+cougar.sp <- la_county_cougars[,c("id", "x", "y")] 
+
+coordinates(cougar.sp) <- c("x", "y")
 proj4string(cougar.sp) <- CRS("+proj=utm +zone=12 +datum=WGS84 +units=m +no_defs")
 ```
 
 ```{r}
-#calculate mcps 
+# plotting with adehabitat
 
-cougar.mcp <- mcp(cougar.sp, percent=100)
+plot(cougar.sp, col = as.factor(cougar.sp@data$id), pch = 16)
+
+# add a column of for the same number to appear as a whole population 
+cougar.mcp <- mcp(cougar.sp, percent = 20)
 ```
+```{r}
+hrs <- mcp.area(cougar.sp, percent = seq(50, 100, by = 5))
+hrs
+```
+
+
+```{r}
+# Transform the point and MCP objects. 
+cougar.spgeo <- spTransform(cougar.sp, CRS("+proj=longlat"))
+cougar.mcpgeo <- spTransform(cougar.mcp, CRS("+proj=longlat"))
+
+register_stadiamaps(key = "f98e8ed5-58b0-4cfd-bce1-82eb7549c4c4")
+
+mybasemap <- get_stadiamap(bbox = c(left = min(cougar.spgeo@coords[,1])-0.005, 
+                                    bottom = min(cougar.spgeo@coords[,2])-0.005, 
+                                    right = max(cougar.spgeo@coords[,1])+0.005, 
+                                    top = max(cougar.spgeo@coords[,2])+0.005), 
+                           zoom = 12)
+
+cougar.geo <- data.frame(cougar.spgeo@coords, 
+                          id = cougar.spgeo@data$id ) 
+
+mymap.hr <- ggmap(mybasemap) + 
+  geom_polygon(data = fortify(cougar.mcpgeo),  
+               # Polygon layer needs to be "fortified" to add geometry to the dataframe
+              aes(long, lat, colour = id, fill = id),
+              alpha = 0.3) + # alpha sets the transparency
+  geom_point(data = cougar.geo, 
+             aes(x = coords.x1, y = coords.x2))  +
+  theme(legend.position = c(0.15, 0.80)) +
+  labs(x = "Longitude", y = "Latitude")
+
+mymap.hr
+```
+
+
+POPULATION level home range 
+we are getting at population habitat USE 
+selection is the proportion of use to availability 
+build home range on subset (take 80/100) 
+put the other 20 back and see where they landed 
+break out by year? is the habitat use changing by 5 year periods? 
+look at historical population data, compare crashes 
+
+find meaningful discretization of time periods 
+
+gganimate 
 
