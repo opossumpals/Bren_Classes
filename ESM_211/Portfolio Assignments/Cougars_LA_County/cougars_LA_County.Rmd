@@ -60,41 +60,37 @@ proj4string(cougar.sp) <- CRS("+proj=utm +zone=12 +datum=WGS84 +units=m +no_defs
 plot(cougar.sp, col = as.factor(cougar.sp@data$id), pch = 16)
 
 # add a column of for the same number to appear as a whole population 
-cougar.mcp <- mcp(cougar.sp, percent = 20)
+cougar.mcp <- mcp(cougar.sp, percent = 100)
+cougar.mcp
 ```
 ```{r}
-hrs <- mcp.area(cougar.sp, percent = seq(50, 100, by = 5))
-hrs
+plot(cougar.sp, col=as.factor(cougar.sp@data$id), pch=16) #plot points
+plot(cougar.mcp, col=alpha(1:5, 0.5), add=TRUE) #plot polygons
+```
+
+```{r}
+#filter by year: looking at 2020 data, effects of pandemic? 
+
+cougar_2020.sp <- cougars %>%  
+  filter(quality_grade == 'research') %>% 
+  dplyr::select(id, observed_on, latitude, longitude) %>% 
+  mutate(id=1) %>% 
+  filter(observed_on >='2020-01-01' & observed_on <= '2020-12-31')
+
+
+coordinates(cougar_2020.sp) <- c("longitude", "latitude")
+cougar_2020.mcp <- mcp(cougar_2020, percent = 100)
 ```
 
 
 ```{r}
-# Transform the point and MCP objects. 
-cougar.spgeo <- spTransform(cougar.sp, CRS("+proj=longlat"))
-cougar.mcpgeo <- spTransform(cougar.mcp, CRS("+proj=longlat"))
+plot(cougar_2020.sp, col=as.factor(cougar_2020.sp@data$id), pch=16) #plot points
+plot(cougar_2020.mcp, col=alpha(1:5, 0.5), add=TRUE) #plot polygons
+```
+```{r}
+## moratorium on rodenticide 
 
-register_stadiamaps(key = "f98e8ed5-58b0-4cfd-bce1-82eb7549c4c4")
 
-mybasemap <- get_stadiamap(bbox = c(left = min(cougar.spgeo@coords[,1])-0.005, 
-                                    bottom = min(cougar.spgeo@coords[,2])-0.005, 
-                                    right = max(cougar.spgeo@coords[,1])+0.005, 
-                                    top = max(cougar.spgeo@coords[,2])+0.005), 
-                           zoom = 12)
-
-cougar.geo <- data.frame(cougar.spgeo@coords, 
-                          id = cougar.spgeo@data$id ) 
-
-mymap.hr <- ggmap(mybasemap) + 
-  geom_polygon(data = fortify(cougar.mcpgeo),  
-               # Polygon layer needs to be "fortified" to add geometry to the dataframe
-              aes(long, lat, colour = id, fill = id),
-              alpha = 0.3) + # alpha sets the transparency
-  geom_point(data = cougar.geo, 
-             aes(x = coords.x1, y = coords.x2))  +
-  theme(legend.position = c(0.15, 0.80)) +
-  labs(x = "Longitude", y = "Latitude")
-
-mymap.hr
 ```
 
 
