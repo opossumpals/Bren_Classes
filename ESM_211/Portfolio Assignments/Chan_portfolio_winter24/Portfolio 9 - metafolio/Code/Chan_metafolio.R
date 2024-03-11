@@ -60,7 +60,13 @@ plot_sim_ts(base1mod, years_to_show = 70, burn = 30)
 # investment (i.e. 1000) and plot the results. How does the variance and mean of the growth rate shift? Does it shift in 
 # the efficiency frontier? Of the two conservation plans, which portfolio is optimal? Why? 
 
-
+## When we change the weight allocation for the "balanced" conservation strategy so that all 10 populations receive a 
+## maximum investment of 1000, the mean growth rate is between 0 and 0.01 with over 0.5 variance. When it is weighted 
+## differently and evaluated with one-half conservation investments, we see that the mean growth rate can also be between 
+## 0 and -0.01 at 0.5 variance. The efficiency frontier also moves when all 10 populations receive maximum investment. 
+## In this simulation, we see it increase as mean growth rate increases. I think having a variation of portfolio values 
+## is a more optimal portfolio because there is less risk associated with being more selective and allocating resources
+## more effectively than "putting all your eggs" in one basket. 
 
 ############################################ begin copied from class ############################################## 
 w_plans <- list() ## Making this a list to run a for loop over all our portfolios 
@@ -93,12 +99,15 @@ plot_cons_plans(arma_sp$plans_mv,
 
 
 
+
+
+
 w.plans <- list()
 
 w.plans[["balanced"]] <- c(1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000,1000, 10000) # all changed to 1000 
 
 w2 <- list() ## Making a list of stream capacities 
-for(i in 1:1) { # loop over plans
+for(i in seq_along(w.plans)) { # loop over plans
   w2[[i]] <- list()
   for(j in 1:80) { # loop over iterations
     w2[[i]][[j]] <- matrix(w.plans[[i]], nrow = 1)
@@ -112,10 +121,14 @@ plot_cons_plans(arma2_sp$plans_mv,
                 cols = c("#E41A1C"), xlab = "Variance of growth rate",
                 ylab = "Mean growth rate") ## Plotting the simulated the portfolios
 
+
+
 # 3. What are some other examples of environmental conditions for salmonids that would be beneficial to model using this 
 # package? 
 
-
+## It would be helpful to know which streams have culverts because this could help prioritize streams and evaluate which 
+## streams needed more resources. It could also be helpful to know if there is agriculture near certain streams to 
+## evaluate if runoff is affecting stream quality. 
 
 
 
